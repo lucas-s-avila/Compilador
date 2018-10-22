@@ -2,36 +2,45 @@
 #include <iostream>
 #include <iterator>
 
-// Remover espaços em branco
-
-std::string triagem(std::string txt){
-  for(std::string::iterator it=txt.begin(); it!=txt.end(); it++) {
-    txt.replace(txt.find(' '),1,'');
+std::string retorno(std::string txt) {
+  int i;
+  std::size_t pos = txt.find("retorno");
+  for(i=0; txt[pos+i] != ";" && txt[pos+i] != *txt.end(), i++);
+  if(txt[pos+i] == *txt.end()) {
+    return '';
   }
-  return txt;
+  return txt.substr(pos, i);
 }
 
 int tam_funcao(std::string txt){  // Pega a posição final i da função no txt baseado nas chaves.
   int cont_chaves = 1;
-  int i = 1;
-  for(std::string::iterator it=txt.begin()+1; it!=txt.end() && cont_chaves!=0; it++) {
-    if(it.compare(0,1,'{') == 0) {
-      cont_chaves++;
-    }
-    if(it.compare(0,1,'}') == 0) {
-      cont_chaves--;
-    }
+  int i = 0;
+
+  if (txt[i] == '{') {
     i++;
+    for(std::string::iterator it=txt.begin()+1; it!=txt.end() && cont_chaves!=0; it++) {
+      if(*it == '{') {
+        cont_chaves++;
+      }
+      if(*it == '}') {
+        cont_chaves--;
+      }
+      i++;
+    }
+    if (cont_chaves!=0) {
+      return -1;
+    }
+    return i;
   }
-  if (cont_chaves!=0) {
-    i=-1;
+  else {
+    return -1;
   }
-  return i;
 }
 
 int tam_param(std::string txt){  // Pega a posição final i da expressao no txt baseado nos parenteses.
   int cont_parenteses = 0;
   int i = 1;
+
   for(std::string::iterator it=txt.begin(); it!=txt.end() && cont_parenteses!=0; it++) {
     if(it.compare(0,1,'(') == 0) {
       cont_parenteses++;
@@ -50,16 +59,20 @@ int tam_param(std::string txt){  // Pega a posição final i da expressao no txt
 // Reconhecedor da transformação <programa>.
 bool programa(std::string txt_original) {
   // Começa com principal?
-  //txt = triagem(txt_original);
+  txt = txt_original;
   if(txt.compare(0,9,"principal") == 0) {
     txt.erase(0,9);
     // Pega a lista de comandos.
     int tam_programa = tam_funcao(txt);
-    if (tam_programa <= 0) {
+    if (tam_programa < 0) {
       return false;
     }
-    // Deriva em ListadeComandos e ListadeFunções.
-    return listadeComandos(txt.substr(0,tam_programa)) && listadeFuncoes(txt.substr(tam_programa+1));
+    if (*txt.end() == txt[tam_programa]) {
+      return listadeComandos(txt.substr(0,tam_programa));
+    }
+    else {
+      return listadeComandos(txt.substr(0,tam_programa)) && listadeFuncoes(txt.substr(tam_programa));
+    }
   }
   else {
     return false;
@@ -70,86 +83,80 @@ bool programa(std::string txt_original) {
 bool listadeFuncoes(std::string txt_original) {
 
   // Verifica qual o tipo de retorno da função.
-  std:string txt = txt_original;
+  std::string retorno;
+  std::string txt = txt_original;
   if(txt.compare(0,3, "int") == 0) {
     txt.erase(0,3);
+    retorno = str_retorno(txt);
+    if (retorno == '') {
+      return false;
+    }
   }
   if(txt.compare(0,2, "pf") == 0) {
     txt.erase(0,2);
+    retorno = str_retorno(txt);
+    if (retorno == '') {
+      return false;
+    }
   }
   if(txt.compare(0,6, "logico") == 0) {
     txt.erase(0,6);
+    retorno = str_retorno(txt);
+    if (retorno == '') {
+      return false;
+    }
   }
   if(txt.compare(0,5, "texto") == 0) {
     txt.erase(0,5);
+    retorno = retorno(txt);
+    if (retorno == '') {
+      return false;
+    }
   }
   if(txt.compare(0,5, "vetor") == 0) {
-    txt.erase(0,5);
-    if(txt.compare(0,3, "int") == 0) {
-      txt.erase(0,3);
-    }
-    if(txt.compare(0,2, "pf") == 0) {
-      txt.erase(0,2);
-    }
-    if(txt.compare(0,6, "logico") == 0) {
-      txt.erase(0,6);
-    }
-    if(txt.compare(0,5, "texto") == 0) {
-      txt.erase(0,5);
-    }
-    else {
-      return false;
-    }
+
   }
   if(txt.compare(0,6, "matriz") == 0) {
-    txt.erase(0,6)
-    if(txt.compare(0,3, "int") == 0) {
-      txt.erase(0,3);
+
+  }
+  else {
+    // Pega o identificador.
+    int i = 0;
+    std::locale loc;
+    if (!std::isalpha(txt.begin(),loc)) {
+      return false;
     }
-    if(txt.compare(0,2, "pf") == 0) {
-      txt.erase(0,2);
+
+    int tam_id =
+    for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='('; it++) {
+      i++;
     }
-    if(txt.compare(0,6, "logico") == 0) {
-      txt.erase(0,6);
+    if(it==txt.end()) {
+      return false;
     }
-    if(txt.compare(0,5, "texto") == 0) {
-      txt.erase(0,5);
+    std::string letras = txt.substr(0, tam_id);
+    txt.erase(0,i);
+
+    // Pega a lista de parâmetros.
+    int tam_p = tam_param(txt);
+    if (tam_p < 0) {
+      return false;
+    }
+    std::string parametros = txt.substr(0, tam_param);
+    txt.erase(0,tam_param);
+
+    // Pega a lista de comandos (tamanho da função).
+    int tam_f = tam_funcao(txt);
+    if (tam_f < 0) {
+          return false;
+    }
+    if (tam_f == 0) {
+      return listadeParametros(parametros) && listadeComandos(txt.substr(0, tam_funcao);
     }
     else {
-      return false;
+      return listadeParametros(parametros) && listadeComandos(txt.substr(0, tam_funcao) && listadeFuncoes(txt.substr(tam_funcao));
     }
   }
-
-    // Pega o identificador.
-  int i = 0;
-  std::locale loc;
-  for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='('; it++) {
-    if (!std::isalpha(*it,loc)) {
-      return false;
-    }
-    i++;
-  }
-  if(it==txt.end()) {
-    return false;
-  }
-  txt.erase(0,i);
-
-  // Pega a lista de parâmetros.
-  int tam_param = tam_param(txt);
-  if (tam_param == 0) {
-    return false;
-  }
-  std::string parametros = txt.substr(0, tam_param);
-  txt.erase(0,tam_param);
-
-  // Pega a lista de comandos (tamanho da função).
-  int tam_funcao = tam_funcao(txt);
-  if (tam_funcao == 0) {
-        return false;
-  }
-  // Deriva em ListadeParametros, ListadeComandos e ListadeFunções;
-  return listadeParametros(parametros) && listadeComandos(txt.substr(0, tam_funcao) && listadeFuncoes(txt.substr(tam_funcao));
-
 }
 
 bool listadeParametros(std::string txt) {
