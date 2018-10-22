@@ -2,9 +2,30 @@
 #include <iostream>
 #include <iterator>
 
-std::string retorno(std::string txt) {
+
+
+int tam_tipo (std::string txt){
+  std::string tipos[] = {"int", "pf", "logico", "texto"};
+  int tam_vetor = 0;
+  for (int i = 0; i < 4; i++) {
+    if ((txt.substr(0,6)).find(tipos[i]) > 0) {
+      txt.erase(0,tipos[i].size());
+      tam_vetor = tipos[i].size();
+      break;
+    }
+  }
+  if (tam_vetor!=0) {
+    return tam_vetor;
+  }
+  return -1;
+}
+
+std::string str_retorno(std::string txt) {
   int i;
   std::size_t pos = txt.find("retorno");
+  if (pos == -1) {
+    return '';
+  }
   for(i=0; txt[pos+i] != ";" && txt[pos+i] != *txt.end(), i++);
   if(txt[pos+i] == *txt.end()) {
     return '';
@@ -33,7 +54,12 @@ int tam_funcao(std::string txt){  // Pega a posição final i da função no txt
     return i;
   }
   else {
-    return -1;
+    if (txt[i] == *txt.end()) {
+      return 0;
+    }
+    else {
+      return -1;
+    }
   }
 }
 
@@ -41,17 +67,34 @@ int tam_param(std::string txt){  // Pega a posição final i da expressao no txt
   int cont_parenteses = 0;
   int i = 1;
 
-  for(std::string::iterator it=txt.begin(); it!=txt.end() && cont_parenteses!=0; it++) {
-    if(it.compare(0,1,'(') == 0) {
-      cont_parenteses++;
+  if(txt[i] == '(') {
+    i++
+    for(std::string::iterator it=txt.begin()+1; it!=txt.end() && cont_parenteses!=0; it++) {
+      if(it.compare(0,1,'(') == 0) {
+        cont_parenteses++;
+      }
+      if(it.compare(0,1,')') == 0) {
+        cont_parenteses--;
+      }
+      i++;
     }
-    if(it.compare(0,1,')') == 0) {
-      cont_parenteses--;
+    if (cont_parenteses!=0) {
+      return -1;
     }
+    return i;
+  }
+  else {
+    return -1;
+  }
+}
+
+int tam_id(std::string txt) {
+  int i=0;
+  for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='('; it++) {
     i++;
   }
-  if (cont_parenteses!=0) {
-    i=0;
+  if(it==txt.end()) {
+    return -1;
   }
   return i;
 }
@@ -83,41 +126,46 @@ bool programa(std::string txt_original) {
 bool listadeFuncoes(std::string txt_original) {
 
   // Verifica qual o tipo de retorno da função.
-  std::string retorno;
   std::string txt = txt_original;
   if(txt.compare(0,3, "int") == 0) {
     txt.erase(0,3);
-    retorno = str_retorno(txt);
-    if (retorno == '') {
-      return false;
-    }
+
+    return funcaoretorno(txt);
   }
   if(txt.compare(0,2, "pf") == 0) {
     txt.erase(0,2);
-    retorno = str_retorno(txt);
-    if (retorno == '') {
-      return false;
-    }
+
+    return funcaoretorno(txt);
   }
   if(txt.compare(0,6, "logico") == 0) {
     txt.erase(0,6);
-    retorno = str_retorno(txt);
-    if (retorno == '') {
-      return false;
-    }
+
+    return funcaoretorno(txt);txt.erase(0,5);
   }
   if(txt.compare(0,5, "texto") == 0) {
     txt.erase(0,5);
-    retorno = retorno(txt);
-    if (retorno == '') {
-      return false;
-    }
+
+    return funcaoretorno(txt);
   }
   if(txt.compare(0,5, "vetor") == 0) {
+    txt.erase(0,5);
 
+    // Pega tipo.
+    int tam_t = tam_tipo(txt);
+    std::string t = txt.substr(0,tam_t);
+    txt.erase(0,tam_t);
+
+    return tipo(t) && funcaoretorno(txt);
   }
   if(txt.compare(0,6, "matriz") == 0) {
+    txt.erase(0,6);
 
+    // Pega tipo.
+    int tam_t = tam_tipo(txt);
+    std::string t = txt.substr(0,tam_t);
+    txt.erase(0,tam_t);
+
+    return tipo(t) && funcaoretorno(txt);
   }
   else {
     // Pega o identificador.
@@ -127,15 +175,9 @@ bool listadeFuncoes(std::string txt_original) {
       return false;
     }
 
-    int tam_id =
-    for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='('; it++) {
-      i++;
-    }
-    if(it==txt.end()) {
-      return false;
-    }
-    std::string letras = txt.substr(0, tam_id);
-    txt.erase(0,i);
+    int tam_i = tam_id(txt)
+    std::string letras = txt.substr(0, tam_i);
+    txt.erase(0, tam_i);
 
     // Pega a lista de parâmetros.
     int tam_p = tam_param(txt);
@@ -151,11 +193,47 @@ bool listadeFuncoes(std::string txt_original) {
           return false;
     }
     if (tam_f == 0) {
-      return listadeParametros(parametros) && listadeComandos(txt.substr(0, tam_funcao);
+      return letra(letras) && listadeParametros(parametros) && listadeComandos_(txt.substr(1, tam_f-2);
     }
     else {
-      return listadeParametros(parametros) && listadeComandos(txt.substr(0, tam_funcao) && listadeFuncoes(txt.substr(tam_funcao));
+      return letra(letras) && listadeParametros(parametros) && listadeComandos_(txt.substr(1, tam_f-2) && listadeFuncoes(txt.substr(tam_f));
     }
+  }
+}
+
+bool funcaoretorno(std::string txt) {
+  // Pega o retorno.
+  std::string retorno = str_retorno(txt);
+  if (retorno == '') {
+    return false;
+  }
+  txt.erase(txt.find(retorno), retorno.size());
+
+  // Pega o identificador.
+  int tam_i = tam_id(txt)
+  std::string id = txt.substr(0, tam_i);
+  txt.erase(0, tam_i);
+
+  // Pega a lista de parâmetros.
+  int tam_p = tam_param(txt);
+  if (tam_p < 0) {
+    return false;
+  }
+  std::string parametros = txt.substr(0, tam_param);
+  txt.erase(0,tam_param);
+
+  // Pega a lista de comandos (tamanho da função).
+  int tam_f = tam_funcao(txt);
+  if (tam_f < 0) {
+    return false;
+  }
+
+  // Deriva.
+  if (tam_f == 0) {
+    return identificador(id) && listadeParametros(parametros) && listadeComandos_(txt.substr(1, tam_f-2) && comandodeRetorno(retorno);
+  }
+  else {
+    return identificador(id) && listadeParametros(parametros) && listadeComandos_(txt.substr(1, tam_f-2) && comandodeRetorno(retorno) && listadeFuncoes(txt.substr(tam_f));
   }
 }
 
@@ -163,23 +241,176 @@ bool listadeParametros(std::string txt) {
   if(txt.compare(0,1, '(') == 0) {
     txt.erase(0);
   }
+  if (txt.compare(0,1, ')') == 0) {
+    return true;
+  }
+  int i = 0;
+  for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!=','; it++) {
+    i++;
+  }
+  if (txt[i] == ')') {
+    return parametro(txt.substr(0,i-1));
+  }
+  return parametro(txt.substr(0,i-1)) && listadeParametros_(txt.substr(i,txt.end()-1));
 
 }
 
 bool listadeParametros_(std::string txt) {
+  // Pega a virgula.
+  if(txt[0] == ',') {
+    txt.erase(0,1);
+  }
+  else {
+    return false;
+  }
 
+  int i=0;
+  for (std::string::iterator it=i; it!=txt.end() && *it!=','; it++) {
+    i++;
+  }
+  if(txt[i] == ',') {
+    return parametro(txt.substr(0,i-1)) && listadeParametros_(txt.substr(i));
+  }
+  else {
+    return parametro(txt);
+  }
 }
 
 bool parametro(std::string txt) {
 
+  int tam_tipo = tam_tipo(txt);
+  // No caso da existencia no inicio de um Tipo: deriva em Tipo e Identificador.
+  if (tam_tipo>0) {
+    return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo, txt.end())));
+
+  } else {
+    if(txt.compare(0,5, "vetor") == 0) {
+      txt.erase(0,5);
+      int tam_tipo = tam_tipo(txt);
+      // Deriva para caso exista um Tipo
+      if (tam_tipo>0) {
+        // Encontra o Identificador
+        int j = tam_tipo;
+        for(std::string::iterator it=tam_tipo; it!=txt.end() && *it!='['; it++) {
+          j++;
+        }
+
+        //  Deriva em Tipo Identificador;
+        if (j==txt.end()) {
+          return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo,txt.end())));
+        }
+
+        // Encontra o Valor_Inteiro
+        int k = j;
+        for(std::string::iterator it=tam_tipo; it!=txt.end() && *it!=']'; it++) {
+          k++;
+        }
+        //  Deriva em Tipo Identificador [Valor_Inteiro];
+        return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo, j-1)) && valor_inteiro(txt.substr(j, k-1)));
+
+      // Deriva para caso não exista um Tipo
+      } else {
+        int pos_como = txt.find("como");
+        int j = pos_como+4;
+        // Encontra o Identificador
+        for(std::string::iterator it=tam_tipo; it!=txt.end() && *it!='['; it++) {
+          j++;
+        }
+
+        //  Deriva em Identificador como Identificador;
+        if (j==txt.end()) {
+          return (identificador(txt.substr(0,pos_como)) && identificador(txt.substr(pos_como+4,txt.end())));
+        }
+
+        // Encontra o Valor_Inteiro
+        int k = j;
+        for(std::string::iterator it=j; it!=txt.end() && *it!=']'; it++) {
+          k++;
+        }
+        //  Deriva em Identificador como Identificador[Valor_Inteiro];
+        return (identificador(txt.substr(0,pos_como)) && identificador(txt.substr(pos_como+4,j-1)) && valor_inteiro(txt.substr(j, k-1)));
+      }
+    }
+    if(txt.compare(0,6, "matriz") == 0) {
+      txt.erase(0,6);
+      int tam_tipo = tam_tipo(txt);
+      // Deriva para caso exista um Tipo
+      if (tam_tipo>0) {
+        // Encontra o Identificador
+        int j = tam_tipo;
+        for(std::string::iterator it=tam_tipo; it!=txt.end() && *it!='['; it++) {
+          j++;
+        }
+
+        //  Deriva em Tipo Identificador;
+        if (j==txt.end()) {
+          return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo,txt.end())));
+        }
+
+        // Encontra o primeiro Valor_Inteiro
+        int k = j;
+        for(std::string::iterator it=j; it!=txt.end() && *it!=']'; it++) {
+          k++;
+        }
+
+        // Encontra o segundo Valor_Inteiro
+        int x = k;
+        for(std::string::iterator it=k+2; it!=txt.end() && *it!=']'; it++) {
+          x++;
+        }
+
+        //  Deriva em Tipo Identificador [Valor_Inteiro];
+        return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo, j-1)) && valor_inteiro(txt.substr(j, k-1)) && valor_inteiro(txt.substr(j, x-1)));
+
+      // Deriva para caso não exista um Tipo
+      } else {
+        int pos_como = txt.find("como");
+        int j = pos_como+4;
+        // Encontra o Identificador
+        for(std::string::iterator it=tam_tipo; it!=txt.end() && *it!='['; it++) {
+          j++;
+        }
+
+        //  Deriva em Identificador como Identificador;
+        if (j==txt.end()) {
+          return (identificador(txt.substr(0,pos_como)) && identificador(txt.substr(pos_como+4,txt.end())));
+        }
+
+        // Encontra o primeiro Valor_Inteiro
+        int k = j;
+        for(std::string::iterator it=j; it!=txt.end() && *it!=']'; it++) {
+          k++;
+        }
+
+        // Encontra o segundo Valor_Inteiro
+        int x = k;
+        for(std::string::iterator it=k+2; it!=txt.end() && *it!=']'; it++) {
+          x++;
+        }
+
+        //  Deriva em Identificador como Identificador[Valor_Inteiro][Valor_Inteiro];
+        return (identificador(txt.substr(0,pos_como)) && identificador(txt.substr(pos_como+4,j-1)) && valor_inteiro(txt.substr(j, k-1)) && valor_inteiro(txt.substr(j, x-1)));
+      }
+    }
+  }
+
+
 }
 
 bool comandodeRetorno(std::string txt) {
-
+  if (txt.compare(0,8,"retorno=")) {
+    txt.erase(0,8);
+    return expressao(txt.substr(txt.begin(), txt.end()-1));
+  }
+  else {
+    return false;
+  }
 }
 
 bool listadeComandos(std::string txt) {
-
+  if (txt[0] = '{') {
+    txt.erase(0,1);
+  }
 }
 
 bool listadeComandos_(std::string txt) {
@@ -226,7 +457,7 @@ bool listadeIdentificadores(std::string txt) {
 
 }
 
-bool tipo(std::string txt) {
+int tipo(std::string txt) {
 
 }
 
@@ -271,7 +502,13 @@ bool letra(std::string txt) {
 }
 
 bool identificador(std::string txt) {
-
+  std::locale loc;
+  for(std::string::iterator it=txt.begin(); it!=txt.end(); it++) {
+    if (!std::isalpha(*it,loc)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 int main() {
