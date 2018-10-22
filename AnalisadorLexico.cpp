@@ -39,21 +39,26 @@ int tam_funcao(std::string txt){  // Pega a posição final i da função no txt
 
 int tam_param(std::string txt){  // Pega a posição final i da expressao no txt baseado nos parenteses.
   int cont_parenteses = 0;
-  int i = 1;
+  int i = 0;
 
-  for(std::string::iterator it=txt.begin(); it!=txt.end() && cont_parenteses!=0; it++) {
-    if(it.compare(0,1,'(') == 0) {
-      cont_parenteses++;
+if(txt[i] == '(') {
+    i++
+    for(std::string::iterator it=txt.begin(); it!=txt.end() && cont_parenteses!=0; it++) {
+      if(it.compare(0,1,'(') == 0) {
+        cont_parenteses++;
+      }
+      if(it.compare(0,1,')') == 0) {
+        cont_parenteses--;
+      }
+      i++;
     }
-    if(it.compare(0,1,')') == 0) {
-      cont_parenteses--;
+    if (cont_parenteses!=0) {
+      return -1;
     }
-    i++;
-  }
-  if (cont_parenteses!=0) {
-    i=0;
-  }
-  return i;
+    return i;
+}
+else {
+  return -1;
 }
 
 // Reconhecedor da transformação <programa>.
