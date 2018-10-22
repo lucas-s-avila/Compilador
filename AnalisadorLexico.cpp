@@ -2,37 +2,64 @@
 #include <iostream>
 #include <iterator>
 
+// Remover espaços em branco
+
+std::string triagem(std::string txt){
+  for(std::string::iterator it=txt.begin(); it!=txt.end(); it++) {
+    txt.replace(txt.find(' '),1,'');
+  }
+  return txt;
+}
+
+int tam_funcao(std::string txt){  // Pega a posição final i da função no txt baseado nas chaves.
+  int cont_chaves = 1;
+  int i = 1;
+  for(std::string::iterator it=txt.begin()+1; it!=txt.end() && cont_chaves!=0; it++) {
+    if(it.compare(0,1,'{') == 0) {
+      cont_chaves++;
+    }
+    if(it.compare(0,1,'}') == 0) {
+      cont_chaves--;
+    }
+    i++;
+  }
+  if (cont_chaves!=0) {
+    i=-1;
+  }
+  return i;
+}
+
+int tam_param(std::string txt){  // Pega a posição final i da expressao no txt baseado nos parenteses.
+  int cont_parenteses = 0;
+  int i = 1;
+  for(std::string::iterator it=txt.begin(); it!=txt.end() && cont_parenteses!=0; it++) {
+    if(it.compare(0,1,'(') == 0) {
+      cont_parenteses++;
+    }
+    if(it.compare(0,1,')') == 0) {
+      cont_parenteses--;
+    }
+    i++;
+  }
+  if (cont_parenteses!=0) {
+    i=0;
+  }
+  return i;
+}
+
 // Reconhecedor da transformação <programa>.
-bool programa(std::string txt) {
+bool programa(std::string txt_original) {
   // Começa com principal?
+  //txt = triagem(txt_original);
   if(txt.compare(0,9,"principal") == 0) {
     txt.erase(0,9);
     // Pega a lista de comandos.
-    int cont_chaves = 0;
-    int i = 1;
-    if(txt.compare(0,1,'{') == 0) {
-      cont_chaves++;
-    }
-    for(std::string::iterator it=txt.begin()+1; it!=txt.end() && cont_chaves!=0; it++) {
-      if(txt.compare(0,1,'{') == 0) {
-        cont_chaves++;
-      }
-      if(txt.compare(0,1,'}') == 0) {
-        cont_chaves--;
-      }
-      i++;
-    }
-    if(cont_chaves != 0) {
+    int tam_programa = tam_funcao(txt);
+    if (tam_programa <= 0) {
       return false;
     }
-    // Caso não exista declarações de funções:
-    if(it==txt.end()) {
-      return listadeComandos(txt);
-    }
-    // Caso exista declarações de funções:
-    else {
-      return listadeComandos(txt.substr(0,i+1)) && listadeFuncoes(txt.substr(i+1));
-    }
+    // Deriva em ListadeComandos e ListadeFunções.
+    return listadeComandos(txt.substr(0,tam_programa)) && listadeFuncoes(txt.substr(tam_programa+1));
   }
   else {
     return false;
@@ -40,49 +67,95 @@ bool programa(std::string txt) {
 }
 
 // Reconhecedor da transformação <ListadeFunções>.
-bool listadeFuncoes(std::string txt) {
-  // Função com retorno de inteiro.
+bool listadeFuncoes(std::string txt_original) {
+
+  // Verifica qual o tipo de retorno da função.
+  std:string txt = txt_original;
   if(txt.compare(0,3, "int") == 0) {
     txt.erase(0,3);
-    // Pega o identificador.
-    std::string id = '';
-    for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='('; it++) {
-      id+=*it;
-    }
-    if(it==txt.end()) {
-      return false;
-    }
-    txt.erase(0,id.lenght());
-
-    // Pega a lista de parâmetros.
-    std::string parametros = '';
-    for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='{'; it++) {
-      parametro+=*it;
-    }
-    if(it==txt.end()) {
-      return false;
-    }
-    txt.erase(0,parametro.lenght());
   }
   if(txt.compare(0,2, "pf") == 0) {
-
+    txt.erase(0,2);
   }
   if(txt.compare(0,6, "logico") == 0) {
-
+    txt.erase(0,6);
   }
   if(txt.compare(0,5, "texto") == 0) {
-
+    txt.erase(0,5);
   }
   if(txt.compare(0,5, "vetor") == 0) {
-
+    txt.erase(0,5);
+    if(txt.compare(0,3, "int") == 0) {
+      txt.erase(0,3);
+    }
+    if(txt.compare(0,2, "pf") == 0) {
+      txt.erase(0,2);
+    }
+    if(txt.compare(0,6, "logico") == 0) {
+      txt.erase(0,6);
+    }
+    if(txt.compare(0,5, "texto") == 0) {
+      txt.erase(0,5);
+    }
+    else {
+      return false;
+    }
   }
-  if(txt.compare(0,5, "matriz") == 0) {
-
+  if(txt.compare(0,6, "matriz") == 0) {
+    txt.erase(0,6)
+    if(txt.compare(0,3, "int") == 0) {
+      txt.erase(0,3);
+    }
+    if(txt.compare(0,2, "pf") == 0) {
+      txt.erase(0,2);
+    }
+    if(txt.compare(0,6, "logico") == 0) {
+      txt.erase(0,6);
+    }
+    if(txt.compare(0,5, "texto") == 0) {
+      txt.erase(0,5);
+    }
+    else {
+      return false;
+    }
   }
+
+    // Pega o identificador.
+  int i = 0;
+  std::locale loc;
+  for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='('; it++) {
+    if (!std::isalpha(*it,loc)) {
+      return false;
+    }
+    i++;
+  }
+  if(it==txt.end()) {
+    return false;
+  }
+  txt.erase(0,i);
+
+  // Pega a lista de parâmetros.
+  int tam_param = tam_param(txt);
+  if (tam_param == 0) {
+    return false;
+  }
+  std::string parametros = txt.substr(0, tam_param);
+  txt.erase(0,tam_param);
+
+  // Pega a lista de comandos (tamanho da função).
+  int tam_funcao = tam_funcao(txt);
+  if (tam_funcao == 0) {
+        return false;
+  }
+  // Deriva em ListadeParametros, ListadeComandos e ListadeFunções;
+  return listadeParametros(parametros) && listadeComandos(txt.substr(0, tam_funcao) && listadeFuncoes(txt.substr(tam_funcao));
 
 }
 
 bool listadeParametros(std::string txt) {
+  if(txt.compare(0,1, '(') == 0) {
+    txt.erase(0);
+  }
 
 }
 
