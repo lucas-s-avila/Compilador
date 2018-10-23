@@ -2,6 +2,20 @@
 #include <iostream>
 #include <iterator>
 
+/* =================== Declaração das Funções =================== */
+
+int tam_tipo (std::string txt);
+
+int tam_funcao(std::string txt);
+
+int tam_param(std::string txt);
+
+int tam_id(std::string txt);
+
+bool programa(std::string txt_original);
+
+bool listadeFuncoes(std::string txt_original);
+
 /* =================== Funções Auxiliares =================== */
 
 int tam_tipo (std::string txt){
@@ -50,33 +64,19 @@ int tam_funcao(std::string txt){  // Pega a posição final i da função no txt
   }
 }
 
-std::string str_retorno(std::string txt) {
-  int i;
-  std::size_t pos = txt.find("retorno");
-  if (pos == -1) {
-    return '';
-  }
-  for(i=0; txt[pos+i] != ";" && txt[pos+i] != *txt.end(), i++);
-  if(txt[pos+i] == *txt.end()) {
-    return '';
-  }
-  return txt.substr(pos, i);
-}
-
 int tam_param(std::string txt){  // Pega a posição final i da expressao no txt baseado nos parenteses.
   int cont_parenteses = 0;
   int i = 0;
-
   if(txt[i] == '(') {
-    i++
-    for(std::string::iterator it=txt.begin()+1; it!=txt.end() && cont_parenteses!=0; it++) {
-      if(it.compare(0,1,'(') == 0) {
+    i++;
+    cont_parenteses++;
+    for(; txt[i] != *txt.end() && cont_parenteses != 0; i++) {
+      if (txt[i] == '(') {
         cont_parenteses++;
       }
-      if(it.compare(0,1,')') == 0) {
+      if (txt[i] == ')') {
         cont_parenteses--;
       }
-      i++;
     }
     if (cont_parenteses!=0) {
       return -1;
@@ -93,7 +93,7 @@ int tam_id(std::string txt) {
   for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='('; it++) {
     i++;
   }
-  if(it==txt.end()) {
+  if(txt[i]==*txt.end()) {
     return -1;
   }
   return i;
@@ -135,30 +135,22 @@ bool listadeFuncoes(std::string txt_original) {
   if(txt.compare(0,3, "int") == 0) {
     txt.erase(0,3);
 
-    //return funcaoretorno(txt);
-    std::cout << txt << "\n\n=============\n\n";
-    return true;
+    return funcaoretorno(txt);
   }
   if(txt.compare(0,2, "pf") == 0) {
     txt.erase(0,2);
 
-    //return funcaoretorno(txt);
-    std::cout << txt << "\n\n=============\n\n";
-    return true;
+    return funcaoretorno(txt);
   }
   if(txt.compare(0,6, "logico") == 0) {
     txt.erase(0,6);
 
-    //return funcaoretorno(txt);
-    std::cout << txt << "\n\n=============\n\n";
-    return true;
+    return funcaoretorno(txt);
   }
   if(txt.compare(0,5, "texto") == 0) {
     txt.erase(0,5);
 
-    //return funcaoretorno(txt);
-    std::cout << txt << "\n\n=============\n\n";
-    return true;
+    return funcaoretorno(txt);
   }
   if(txt.compare(0,5, "vetor") == 0) {
     txt.erase(0,5);
@@ -168,9 +160,7 @@ bool listadeFuncoes(std::string txt_original) {
     std::string t = txt.substr(0,tam_t);
     txt.erase(0,tam_t);
 
-    //return tipo(t) && funcaoretorno(txt);
-    std::cout << t << "\n\n=============\n\n" << txt << "\n\n=============\n\n";
-    return true
+    return tipo(t) && funcaoretorno(txt);
   }
   if(txt.compare(0,6, "matriz") == 0) {
     txt.erase(0,6);
@@ -180,19 +170,16 @@ bool listadeFuncoes(std::string txt_original) {
     std::string t = txt.substr(0,tam_t);
     txt.erase(0,tam_t);
 
-    //return tipo(t) && funcaoretorno(txt);
-    std::cout << t << "\n\n=============\n\n" << txt << "\n\n=============\n\n";
-    return true
+    return tipo(t) && funcaoretorno(txt);
   }
   else {
     // Pega o identificador.
     int i = 0;
-    std::locale loc;
-    if (!std::isalpha(txt.begin(),loc)) {
+    if (!std::isalpha(*txt.begin())) {
       return false;
     }
 
-    int tam_i = tam_id(txt)
+    int tam_i = tam_id(txt);
     std::string letras = txt.substr(0, tam_i);
     txt.erase(0, tam_i);
 
@@ -201,23 +188,19 @@ bool listadeFuncoes(std::string txt_original) {
     if (tam_p < 0) {
       return false;
     }
-    std::string parametros = txt.substr(0, tam_param);
-    txt.erase(0,tam_param);
+    std::string parametros = txt.substr(0, tam_p);
+    txt.erase(0,tam_p);
 
     // Pega a lista de comandos (tamanho da função).
     int tam_f = tam_funcao(txt);
     if (tam_f < 0) {
           return false;
     }
-    if (tam_f == 0) {
-      //return letra(letras) && listadeParametros(parametros) && listadeComandos_(txt.substr(1, tam_f-2);
-      std::cout << letras << "\n\n=============\n\n" << parametros << "\n\n=============\n\n" << txt.substr(1, tam_f-2) << "\n\n=============\n\n";
-      return true;
+    if (txt[tam_f] == *txt.end()) {
+      return letra(letras) && listadeParametros(parametros) && listadeComandos_(txt.substr(1, tam_f-2);
     }
     else {
-      //return letra(letras) && listadeParametros(parametros) && listadeComandos_(txt.substr(1, tam_f-2) && listadeFuncoes(txt.substr(tam_f));
-      std::cout << letras << "\n\n=============\n\n" << parametros << "\n\n=============\n\n" << txt.substr(1, tam_f-2) << "\n\n=============\n\n" << txt.substr(tam_f) << "\n\n=============\n\n";
-      return true && listadeFuncoes(txt.substr(tam_f));
+      return letra(letras) && listadeParametros(parametros) && listadeComandos_(txt.substr(1, tam_f-2) && listadeFuncoes(txt.substr(tam_f));
     }
   }
 }
