@@ -67,15 +67,9 @@ int tam_param(std::string txt){  // Pega a posição final i da expressao no txt
   int cont_parenteses = 0;
   int i = 0;
 
-<<<<<<< HEAD
-if(txt[i] == '(') {
-    i++
-    for(std::string::iterator it=txt.begin(); it!=txt.end() && cont_parenteses!=0; it++) {
-=======
   if(txt[i] == '(') {
     i++
     for(std::string::iterator it=txt.begin()+1; it!=txt.end() && cont_parenteses!=0; it++) {
->>>>>>> 5090b555ec07cd803f51c04a3030b59d3ad63ee3
       if(it.compare(0,1,'(') == 0) {
         cont_parenteses++;
       }
@@ -88,11 +82,6 @@ if(txt[i] == '(') {
       return -1;
     }
     return i;
-<<<<<<< HEAD
-}
-else {
-  return -1;
-=======
   }
   else {
     return -1;
@@ -108,7 +97,6 @@ int tam_id(std::string txt) {
     return -1;
   }
   return i;
->>>>>>> 5090b555ec07cd803f51c04a3030b59d3ad63ee3
 }
 
 // Reconhecedor da transformação <programa>.
@@ -152,7 +140,7 @@ bool listadeFuncoes(std::string txt_original) {
   if(txt.compare(0,6, "logico") == 0) {
     txt.erase(0,6);
 
-    return funcaoretorno(txt);txt.erase(0,5);
+    return funcaoretorno(txt);
   }
   if(txt.compare(0,5, "texto") == 0) {
     txt.erase(0,5);
@@ -527,11 +515,15 @@ int main() {
 
   // Lê o arquivo passado como: "./exemplo < <nome_do_arquivo>.txt".
   std::string entrada(std::istreambuf_iterator<char>(std::cin), std::istreambuf_iterator<char>());
+  entrada.pop_back();
 
   // Exclui espaços, tabulações e quebras de linhas da string.
-  for(std::string::iterator it=entrada.begin(); it!=entrada.end(); it++) {
-    if(it == ' ' || it == '\t' || it == '\n') {
+  for(std::string::iterator it=entrada.begin(); it!=entrada.end();) {
+    if(*it == '\u0020' || *it == '\u000a' ) {
       entrada.erase(it);
+    }
+    else {
+      it++;
     }
   }
 
