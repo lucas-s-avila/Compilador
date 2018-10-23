@@ -2,7 +2,7 @@
 #include <iostream>
 #include <iterator>
 
-
+/* =================== Funções Auxiliares =================== */
 
 int tam_tipo (std::string txt){
   std::string tipos[] = {"int", "pf", "logico", "texto"};
@@ -98,6 +98,8 @@ int tam_id(std::string txt) {
   }
   return i;
 }
+
+/* =================== Reconhecedor =================== */
 
 // Reconhecedor da transformação <programa>.
 bool programa(std::string txt_original) {
