@@ -2,6 +2,20 @@
 #include <iostream>
 #include <iterator>
 
+/* =================== Declaração das Funções =================== */
+
+int tam_tipo (std::string txt);
+
+int tam_funcao(std::string txt);
+
+int tam_param(std::string txt);
+
+int tam_id(std::string txt);
+
+bool programa(std::string txt_original);
+
+bool listadeFuncoes(std::string txt_original);
+
 /* =================== Funções Auxiliares =================== */
 
 int tam_tipo (std::string txt){
@@ -66,17 +80,16 @@ int tam_funcao(std::string txt){  // Pega a posição final i da função no txt
 int tam_param(std::string txt){  // Pega a posição final i da expressao no txt baseado nos parenteses.
   int cont_parenteses = 0;
   int i = 0;
-
   if(txt[i] == '(') {
-    i++
-    for(std::string::iterator it=txt.begin()+1; it!=txt.end() && cont_parenteses!=0; it++) {
-      if(it.compare(0,1,'(') == 0) {
+    i++;
+    cont_parenteses++;
+    for(; txt[i] != *txt.end() && cont_parenteses != 0; i++) {
+      if (txt[i] == '(') {
         cont_parenteses++;
       }
-      if(it.compare(0,1,')') == 0) {
+      if (txt[i] == ')') {
         cont_parenteses--;
       }
-      i++;
     }
     if (cont_parenteses!=0) {
       return -1;
@@ -93,7 +106,7 @@ int tam_id(std::string txt) {
   for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='('; it++) {
     i++;
   }
-  if(it==txt.end()) {
+  if(txt[i]==*txt.end()) {
     return -1;
   }
   return i;
@@ -172,12 +185,11 @@ bool listadeFuncoes(std::string txt_original) {
   else {
     // Pega o identificador.
     int i = 0;
-    std::locale loc;
-    if (!std::isalpha(txt.begin(),loc)) {
+    if (!std::isalpha(*txt.begin())) {
       return false;
     }
 
-    int tam_i = tam_id(txt)
+    int tam_i = tam_id(txt);
     std::string letras = txt.substr(0, tam_i);
     txt.erase(0, tam_i);
 
@@ -186,15 +198,15 @@ bool listadeFuncoes(std::string txt_original) {
     if (tam_p < 0) {
       return false;
     }
-    std::string parametros = txt.substr(0, tam_param);
-    txt.erase(0,tam_param);
+    std::string parametros = txt.substr(0, tam_p);
+    txt.erase(0,tam_p);
 
     // Pega a lista de comandos (tamanho da função).
     int tam_f = tam_funcao(txt);
     if (tam_f < 0) {
           return false;
     }
-    if (tam_f == 0) {
+    if (txt[tam_f] == *txt.end()) {
       return letra(letras) && listadeParametros(parametros) && listadeComandos_(txt.substr(1, tam_f-2);
     }
     else {
