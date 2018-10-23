@@ -262,9 +262,13 @@ bool listadeParametros(std::string txt) {
   for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!=','; it++) {
     i++;
   }
+
+  //  Caso so tenha um parametro deriva em Parametro.
   if (txt[i] == ')') {
     return parametro(txt.substr(0,i-1));
   }
+
+  //  Deriva em Parametro listadeParametros_.
   return parametro(txt.substr(0,i-1)) && listadeParametros_(txt.substr(i,txt.end()-1));
 
 }
@@ -282,9 +286,13 @@ bool listadeParametros_(std::string txt) {
   for (std::string::iterator it=i; it!=txt.end() && *it!=','; it++) {
     i++;
   }
+
+  //  Deriva em Parametro listadeParametros_.
   if(txt[i] == ',') {
     return parametro(txt.substr(0,i-1)) && listadeParametros_(txt.substr(i));
   }
+
+  //  Caso so tenha um parametro deriva em Parametro.
   else {
     return parametro(txt);
   }
@@ -315,12 +323,12 @@ bool parametro(std::string txt) {
         }
 
         // Encontra o Valor_Inteiro
-        int k = j;
-        for(std::string::iterator it=tam_tipo; it!=txt.end() && *it!=']'; it++) {
+        int k = j+2;
+        for(std::string::iterator it=j+2; it!=txt.end() && *it!=']'; it++) {
           k++;
         }
         //  Deriva em Tipo Identificador [Valor_Inteiro];
-        return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo, j-1)) && valor_inteiro(txt.substr(j, k-1)));
+        return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo, j)) && valor_inteiro(txt.substr(j+2, k)));
 
       // Deriva para caso não exista um Tipo
       } else {
@@ -333,16 +341,16 @@ bool parametro(std::string txt) {
 
         //  Deriva em Identificador como Identificador;
         if (j==txt.end()) {
-          return (identificador(txt.substr(0,pos_como)) && identificador(txt.substr(pos_como+4,txt.end())));
+          return (identificador(txt.substr(0,pos_como-1)) && identificador(txt.substr(pos_como+4,txt.end())));
         }
 
         // Encontra o Valor_Inteiro
-        int k = j;
-        for(std::string::iterator it=j; it!=txt.end() && *it!=']'; it++) {
+        int k = j+2;
+        for(std::string::iterator it=j+2; it!=txt.end() && *it!=']'; it++) {
           k++;
         }
         //  Deriva em Identificador como Identificador[Valor_Inteiro];
-        return (identificador(txt.substr(0,pos_como)) && identificador(txt.substr(pos_como+4,j-1)) && valor_inteiro(txt.substr(j, k-1)));
+        return (identificador(txt.substr(0,pos_como-1)) && identificador(txt.substr(pos_como+4,j)) && valor_inteiro(txt.substr(j+2, k)));
       }
     }
     if(txt.compare(0,6, "matriz") == 0) {
@@ -362,19 +370,19 @@ bool parametro(std::string txt) {
         }
 
         // Encontra o primeiro Valor_Inteiro
-        int k = j;
-        for(std::string::iterator it=j; it!=txt.end() && *it!=']'; it++) {
+        int k = j+2;
+        for(std::string::iterator it=j+2; it!=txt.end() && *it!=']'; it++) {
           k++;
         }
 
         // Encontra o segundo Valor_Inteiro
-        int x = k;
-        for(std::string::iterator it=k+2; it!=txt.end() && *it!=']'; it++) {
+        int x = k+3;
+        for(std::string::iterator it=k+3; it!=txt.end() && *it!=']'; it++) {
           x++;
         }
 
         //  Deriva em Tipo Identificador [Valor_Inteiro];
-        return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo, j-1)) && valor_inteiro(txt.substr(j, k-1)) && valor_inteiro(txt.substr(j, x-1)));
+        return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo, j)) && valor_inteiro(txt.substr(j+2, k)) && valor_inteiro(txt.substr(k+3, x)));
 
       // Deriva para caso não exista um Tipo
       } else {
@@ -387,23 +395,23 @@ bool parametro(std::string txt) {
 
         //  Deriva em Identificador como Identificador;
         if (j==txt.end()) {
-          return (identificador(txt.substr(0,pos_como)) && identificador(txt.substr(pos_como+4,txt.end())));
+          return (identificador(txt.substr(0,pos_como-1)) && identificador(txt.substr(pos_como+4,txt.end())));
         }
 
         // Encontra o primeiro Valor_Inteiro
-        int k = j;
-        for(std::string::iterator it=j; it!=txt.end() && *it!=']'; it++) {
+        int k = j+2;
+        for(std::string::iterator it=j+2; it!=txt.end() && *it!=']'; it++) {
           k++;
         }
 
         // Encontra o segundo Valor_Inteiro
-        int x = k;
-        for(std::string::iterator it=k+2; it!=txt.end() && *it!=']'; it++) {
+        int x = k+3;
+        for(std::string::iterator it=k+3; it!=txt.end() && *it!=']'; it++) {
           x++;
         }
 
         //  Deriva em Identificador como Identificador[Valor_Inteiro][Valor_Inteiro];
-        return (identificador(txt.substr(0,pos_como)) && identificador(txt.substr(pos_como+4,j-1)) && valor_inteiro(txt.substr(j, k-1)) && valor_inteiro(txt.substr(j, x-1)));
+        return (identificador(txt.substr(0,pos_como-1)) && identificador(txt.substr(pos_como+4,j)) && valor_inteiro(txt.substr(j+2, k)) && valor_inteiro(txt.substr(k+3, x)));
       }
     }
   }
@@ -424,15 +432,208 @@ bool comandodeRetorno(std::string txt) {
 bool listadeComandos(std::string txt) {
   if (txt[0] = '{') {
     txt.erase(0,1);
+  } else{
+    return false
   }
+  return listadeComandos_(txt.substr(0, txt.end()-1));
 }
 
 bool listadeComandos_(std::string txt) {
+  int i = 0;
+  for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!=';'; it++) {
+    i++;
+  }
+  if (txt[i] == *txt.end()) {
+    return false;
+  }
+
+  return (comando(txt.substr(0, i-1)) && listadeComandos_(txt.substr(i+1,txt.end()));
 
 }
 
 bool comando(std::string txt) {
 
+
+  int tam_tipo = tam_tipo(txt);
+  // No caso da existencia no inicio de um Tipo: deriva em Tipo e Identificador.
+  if (tam_tipo>0) {
+    return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo, txt.end())));
+
+  } else {
+    if(txt.compare(0,5, "vetor") == 0) {
+      txt.erase(0,5);
+      int tam_tipo = tam_tipo(txt);
+      // Deriva para caso exista um Tipo
+      if (tam_tipo>0) {
+        // Encontra o Identificador
+        int j = tam_tipo;
+        for(std::string::iterator it=tam_tipo; it!=txt.end() && *it!='['; it++) {
+          j++;
+        }
+
+        //  Deriva em Tipo Identificador;
+        if (j==txt.end()) {
+          return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo,txt.end())));
+        }
+
+        // Encontra o Valor_Inteiro
+        int k = j+2;
+        for(std::string::iterator it=j+2; it!=txt.end() && *it!=']'; it++) {
+          k++;
+        }
+        //  Deriva em Tipo Identificador [Valor_Inteiro];
+        return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo, j)) && valor_inteiro(txt.substr(j+2, k)));
+
+      // Deriva para caso não exista um Tipo
+      } else {
+        int pos_como = txt.find("como");
+        int j = pos_como+4;
+        // Encontra o Identificador
+        for(std::string::iterator it=tam_tipo; it!=txt.end() && *it!='['; it++) {
+          j++;
+        }
+
+        //  Deriva em Identificador como Identificador;
+        if (j==txt.end()) {
+          return (identificador(txt.substr(0,pos_como-1)) && identificador(txt.substr(pos_como+4,txt.end())));
+        }
+
+        // Encontra o Valor_Inteiro
+        int k = j+2;
+        for(std::string::iterator it=j+2; it!=txt.end() && *it!=']'; it++) {
+          k++;
+        }
+        //  Deriva em Identificador como Identificador[Valor_Inteiro];
+        return (identificador(txt.substr(0,pos_como-1)) && identificador(txt.substr(pos_como+4,j)) && valor_inteiro(txt.substr(j+2, k)));
+      }
+    }
+    if(txt.compare(0,6, "matriz") == 0) {
+      txt.erase(0,6);
+      int tam_tipo = tam_tipo(txt);
+      // Deriva para caso exista um Tipo
+      if (tam_tipo>0) {
+        // Encontra o Identificador
+        int j = tam_tipo;
+        for(std::string::iterator it=tam_tipo; it!=txt.end() && *it!='['; it++) {
+          j++;
+        }
+
+        //  Deriva em Tipo Identificador;
+        if (j==txt.end()) {
+          return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo,txt.end())));
+        }
+
+        // Encontra o primeiro Valor_Inteiro
+        int k = j+2;
+        for(std::string::iterator it=j+2; it!=txt.end() && *it!=']'; it++) {
+          k++;
+        }
+
+        // Encontra o segundo Valor_Inteiro
+        int x = k+3;
+        for(std::string::iterator it=k+3; it!=txt.end() && *it!=']'; it++) {
+          x++;
+        }
+
+        //  Deriva em Tipo Identificador [Valor_Inteiro];
+        return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo, j)) && valor_inteiro(txt.substr(j+2, k)) && valor_inteiro(txt.substr(k+3, x)));
+
+      // Deriva para caso não exista um Tipo
+      } else {
+        int pos_como = txt.find("como");
+        int j = pos_como+4;
+        // Encontra o Identificador
+        for(std::string::iterator it=tam_tipo; it!=txt.end() && *it!='['; it++) {
+          j++;
+        }
+
+        //  Deriva em Identificador como Identificador;
+        if (j==txt.end()) {
+          return (identificador(txt.substr(0,pos_como-1)) && identificador(txt.substr(pos_como+4,txt.end())));
+        }
+
+        // Encontra o primeiro Valor_Inteiro
+        int k = j+2;
+        for(std::string::iterator it=j+2; it!=txt.end() && *it!=']'; it++) {
+          k++;
+        }
+
+        // Encontra o segundo Valor_Inteiro
+        int x = k+3;
+        for(std::string::iterator it=k+3; it!=txt.end() && *it!=']'; it++) {
+          x++;
+        }
+
+        //  Deriva em Identificador como Identificador[Valor_Inteiro][Valor_Inteiro];
+        return (identificador(txt.substr(0,pos_como-1)) && identificador(txt.substr(pos_como+4,j)) && valor_inteiro(txt.substr(j+2, k)) && valor_inteiro(txt.substr(k+3, x)));
+      }
+    }
+    if(txt.compare(0,8, "Complexo") == 0) {
+      txt.erase(0,8);
+      int j = 0;
+      for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='{'; it++) {
+        j++;
+      }
+      if (j==txt.end()) {
+        return false;
+      }
+      else{
+        // Encontra a lista de declarações.
+        int k = j+2;
+        for(std::string::iterator it=j+2; it!=txt.end() && *it!='}'; it++) {
+          k++;
+        }
+        //  Deriva em Identificador {listadeDeclaracoes}.
+        return (identificador(txt.substr(0,j)) && listadeDeclaracoes(txt.substr(j+2, k)));
+      }
+    }
+    // Procura o primeiro caso "como".
+    int pos_como = txt.find("como");
+    if (pos_como>0) {
+      // Deriva no primeiro caso Letra como Identificador.
+      return (letra(txt.substr(0, pos_como-1)) && identificador(txt.substr(pos_como+4, txt.end())));
+    } else {
+
+      // Procura a igualdade no segundo caso.
+      int pos_igualdade = txt.find('=');
+      std::string texto = '';
+
+      // Verifica se é igualado a um texto.
+      if (txt[pos_igualdade+1] == '"') {
+        texto = txt.substr(pos_igualdade+2, txt.end()-1);
+      }
+
+      // Procura caso de letras [Valor Inteiro].
+      int pos_colchete_1 = txt.find('[');
+      if (pos_colchete_1>0) {
+        int pos_colchete_2 = txt.substr(pos_colchete_1+1, txt.end()).find('[');
+
+        // Procura caso de letras [Valor Inteiro][Valor_Inteiro].
+        if (pos_colchete_2>0) {
+          if (texto.size()>0) {
+
+
+            // Procura caso de letras [Valor Inteiro][Valor_Inteiro] = "texto".
+            return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-2)) && valorInteiro(txt.substr(pos_colchete_2+1, pos_igualdade-1)) && texto(texto));
+          }
+
+
+          // Procura caso de letras [Valor Inteiro][Valor_Inteiro] = Expressao.
+          return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-2)) && valorInteiro(txt.substr(pos_colchete_2+1, pos_igualdade-1)) && expressao(txt.substr(pos_igualdade+1, txt.end())));
+        }
+        if (texto.size()>0) {
+
+          // Procura caso de letras [Valor Inteiro] = "texto".
+          return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_igualdade-1)) && texto(texto));
+        }
+
+        // Procura caso de letras [Valor Inteiro] = Expressao.
+        return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_igualdade-1)) && expressao(txt.substr(pos_igualdade+1, txt.end())));
+      }
+      
+    }
+
+  }
 }
 
 bool chamadadeFuncao(std::string txt) {
