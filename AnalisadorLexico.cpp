@@ -446,6 +446,56 @@ bool listadeComandos_(std::string txt) {
   if (txt[i] == *txt.end()) {
     return false;
   }
+  // Levar para Comando o tamanho exato do Escolha Caso;
+  if (txt.compare(0,12, "escolha caso")) {
+    txt_auxiliar = txt;
+    txt_auxiliar.erase(0,12);
+    int i = 12;
+    pos_entao = txt_auxiliar.find("entao");
+    i+=pos_entao+5;
+    txt_auxiliar.erase(0, pos_entao+4);
+    tam_escolha = tam_funcao(txt_auxiliar);
+    i+=tam_escolha;
+    txt_auxiliar.erase(0,tam_escolha);
+    while (1==1){
+      if (txt.compare(0,4, "caso")) {
+        i+=4;
+        txt_auxiliar.erase(0,4);
+        pos_entao = txt_auxiliar.find("entao");
+        i+=pos_entao+5;
+        txt_auxiliar.erase(0, pos_entao+4);
+        tam_escolha = tam_funcao(txt_auxiliar);
+        i+=tam_escolha;
+        txt_auxiliar.erase(0,tam_escolha);
+      }
+      else if (txt.compare(0,14, "caso contrario")) {
+        i+=14;
+        txt_auxiliar.erase(0,14);
+        tam_escolha = tam_funcao(txt_auxiliar);
+        i+=tam_escolha;
+        txt_auxiliar.erase(0,tam_escolha);
+      } else {
+        break;
+      }
+    }
+    return (comando(txt.substr(0, i)) && listadeComandos_(txt.substr(i+1,txt.end()));
+
+  }
+
+  // Levar para Comando o tamanho exato do Caso;
+  if (txt.compare(0,4, "caso")) {
+    txt_auxiliar = txt;
+    txt_auxiliar.erase(0,4);
+    int i = 4;
+    pos_entao = txt_auxiliar.find("entao");
+    i+=pos_entao+5;
+    txt_auxiliar.erase(0, pos_entao+4);
+    tam_escolha = tam_funcao(txt_auxiliar);
+    i+=tam_escolha;
+    }
+    return (comando(txt.substr(0, i)) && listadeComandos_(txt.substr(i+1,txt.end()));
+
+  }
 
   return (comando(txt.substr(0, i-1)) && listadeComandos_(txt.substr(i+1,txt.end()));
 
@@ -460,6 +510,29 @@ bool comando(std::string txt) {
     return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo, txt.end())));
 
   } else {
+    if (txt.compare(0,4, "caso")) {
+      txt.erase(0,4);
+      pos_entao = txt.find("entao");
+      if (pos_entao>0) {
+        // Deriva em caso (expressaoLogica) entao {listadeComandos}
+        return (expressaoLogica(txt.substr(1, pos_entao-2)) && listadeComandos(txt.substr(pos_entao+6, txt.end()-1)))
+      } else {
+        return false;
+      }
+    }
+    if (txt.compare(0,12, "escolha caso")) {
+      txt.erase(0,12);
+      pos_entao = txt.find("entao");
+      if (pos_caso_contrario>0) {
+        int tam_conteudo_entao = tam_funcao(txt.substr(pos_entao+5, txt.end()));
+
+          // Deriva em escolha caso (expressaoLogica) entao {listadeComandos} <listadeCondicionalCaso>
+        return (expressaoLogica(txt.substr(1, pos_entao-2)) && listadeComandos(txt.substr(pos_entao+6, pos_entao+6+tam_conteudo_entao)) && listadeCondicionalCaso(txt.substr(pos_entao+6+tam_conteudo_entao, txt.end())))
+      } else {
+        return false;
+      }
+    }
+
     if(txt.compare(0,5, "vetor") == 0) {
       txt.erase(0,5);
       int tam_tipo = tam_tipo(txt);
@@ -605,11 +678,11 @@ bool comando(std::string txt) {
 
       // Procura caso de letras [Valor Inteiro].
       int pos_colchete_1 = txt.find('[');
-      if (pos_colchete_1>0) {
+      if (pos_colchete_1>0 && pos_igualdade>pos_colchete_1) {
         int pos_colchete_2 = txt.substr(pos_colchete_1+1, txt.end()).find('[');
 
         // Procura caso de letras [Valor Inteiro][Valor_Inteiro].
-        if (pos_colchete_2>0) {
+        if (pos_colchete_2>0 && pos_igualdade>pos_colchete_1) {
           if (texto.size()>0) {
 
 
@@ -630,10 +703,34 @@ bool comando(std::string txt) {
         // Procura caso de letras [Valor Inteiro] = Expressao.
         return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_igualdade-1)) && expressao(txt.substr(pos_igualdade+1, txt.end())));
       }
-      
-    }
+      pos_barra = txt.find('/');
+      if (pos_barra>0 && pos_igualdade>pos_barra) {
 
+        // Deriva em Letras / atribuicao OU Letras / atribuicaodeAtributo.
+        return (letra(txt.substr(0, pos_barra-1)) &&  (atribuicao(txt.substr(pos_barra+1, txt.end())) || atribuicaodeAtributo(txt.substr(pos_barra+1, txt.end()))));
+      }
+
+      if (pos_igualdade<0) {
+        pos_parenteses = txt.find('(');
+        if (pos_parenteses>0) {
+
+          // Deriva em Letras (listadeIdentificadores).
+          return (letra(txt.substr(0, pos_parenteses-1)) &&   listadeIdentificadores(txt.substr(pos_parenteses+1, txt.end()-1)));
+        }
+      }
+
+      if (texto.size()>0) {
+
+        // Deriva em Letras = "texto".
+        return (letra(txt.substr(0, pos_igualdade-1)) && texto(texto));
+      } else {
+
+        // Deriva em Letras = expressao OU Letras = chamadadeFuncao.
+        return (letra(txt.substr(0, pos_igualdade-1)) && (chamadadeFuncao(txt.substr(pos_igualdade+1, txt.end())) || expressao(txt.substr(pos_igualdade+1, txt.end()))));
+      }
+    }
   }
+  return false;
 }
 
 bool chamadadeFuncao(std::string txt) {
