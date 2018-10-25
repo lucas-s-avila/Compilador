@@ -16,6 +16,24 @@ bool programa(std::string txt_original);
 
 bool listadeFuncoes(std::string txt_original);
 
+bool funcaoretorno(std::string txt);
+
+bool listadeParametros(std::string txt);
+
+bool parametro(std::string txt);
+
+bool comandodeRetorno(std::string txt);
+
+bool listadeComandos(std::string txt);
+
+bool listadeComandos_(std::string txt);
+
+bool comando(std::string txt);
+
+bool chamadadeFuncao(std::string txt);
+
+bool declaracaodeEstrutura(std::string txt);
+
 /* =================== Funções Auxiliares =================== */
 
 int tam_tipo (std::string txt){
@@ -103,7 +121,7 @@ int tam_param(std::string txt){  // Pega a posição final i da expressao no txt
 
 int tam_id(std::string txt) {
   int i=0;
-  for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='('; it++) {
+  for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='(' && *it!='{'; it++) {
     i++;
   }
   if(txt[i]==*txt.end()) {
@@ -184,10 +202,10 @@ bool listadeFuncoes(std::string txt_original) {
   }
   else {
     // Pega o identificador.
-    int i = 0;
     if (!std::isalpha(*txt.begin())) {
       return false;
     }
+    txt.erase(0,1);
 
     int tam_i = tam_id(txt);
     std::string letras = txt.substr(0, tam_i);
@@ -734,11 +752,73 @@ bool comando(std::string txt) {
 }
 
 bool chamadadeFuncao(std::string txt) {
+  // Pega o identificador.
+  if (!std::isalpha(*txt.begin())) {
+    return false;
+  }
+  txt.erase(0,1);
 
+  int tam_i = tam_id(txt);
+  std::string letras = txt.substr(0, tam_i);
+  txt.erase(0, tam_i);
+
+  // Consome "(".
+  if(txt[0] != '(') {
+    return false;
+  }
+  txt.erase(0,1);
+
+  // Se não é passado parâmetros.
+  if(txt[0] == ')') {
+    return letra(letras);
+  }
+  else {
+    // Consome o ")".
+    if (*txt.end() == ')') {
+      // Pega a lista de ids.
+      std::string ids = txt.substr(txt.begin(),txt.end()-1);
+      return letra(letras) && listadeIdentificadores(ids);
+    }
+    return false;
+  }
 }
 
-bool declaracaodeEstrututra(std::string txt) {
+bool declaracaodeEstrutura(std::string txt) {
+  // Consome o "complexo".
+  if (txt.compare(0,8,"complexo") != 0) {
+    return false;
+  }
+  txt.erase(0,8);
 
+  // Se existe identificador.
+  if (txt[0] == '{') {
+    return false;
+  }
+
+  // Pega o identificador.
+  int tam_i = tam_id(txt);
+  std::string id = txt.substr(0, tam_i);
+  txt.erase(0, tam_i);
+
+  // Consome o '{'.
+  if (txt[0] != '{') {
+    return false;
+  }
+  txt.erase(0,1);
+
+  // Se não é passado declarações.
+  if(txt[0] == '}') {
+    return identificador(id);
+  }
+  else {
+    // Consome o '}'.
+    if (*txt.end() == '}') {
+      // Pega a lista de declarações.
+      std::string declaracoes = txt.substr(txt.begin(),txt.end()-1);
+      return identificador(id) && listadeDeclaracoes(declaracoes);
+    }
+    return false;
+  }
 }
 
 bool listadeDeclaracoes(std::string txt) {
