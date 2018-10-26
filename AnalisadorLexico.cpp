@@ -34,6 +34,12 @@ bool chamadadeFuncao(std::string txt);
 
 bool declaracaodeEstrutura(std::string txt);
 
+bool declaracao(std::string txt);
+
+bool tipo(std::string txt);
+
+bool identificador(std::string txt);
+
 /* =================== Funções Auxiliares =================== */
 
 int tam_tipo (std::string txt){
@@ -510,7 +516,6 @@ bool listadeComandos_(std::string txt) {
     txt_auxiliar.erase(0, pos_entao+4);
     tam_escolha = tam_funcao(txt_auxiliar);
     i+=tam_escolha;
-    }
     return (comando(txt.substr(0, i)) && listadeComandos_(txt.substr(i+1,txt.end()));
 
   }
@@ -826,7 +831,109 @@ bool listadeDeclaracoes(std::string txt) {
 }
 
 bool declaracao(std::string txt) {
+  // Consome o tipo.
+  if (txt.compare(0,5,"vetor") == 0) {
+    txt.erase(0,5);
 
+    // Pega tipo.
+    int tam_t = tam_tipo(txt);
+    std::string t = txt.substr(0,tam_t);
+    txt.erase(0,tam_t);
+
+    // Pega identificador.
+    std::string id;
+    if (txt.find('[') == -1) {
+      return false;
+    }
+    id = txt.substr(0,txt.find('['));
+    txt.erase(0,id.size());
+
+    // Pega o valor inteiro.
+    std::string v;
+    if (*txt.end() == ';' && *(txt.end()-1) == ']') {
+      v = txt.substr(txt.begin()+1,txt.end()-2);
+      return tipo(t) && identificador(id) && valorInteiro(v);
+    }
+    return false;
+  }
+  if (txt.compare(0,6,"matriz") == 0) {
+    txt.erase(0,6);
+
+    // Pega tipo.
+    int tam_t = tam_tipo(txt);
+    std::string t = txt.substr(0,tam_t);
+    txt.erase(0,tam_t);
+
+    // Pega identificador.
+    std::string id;
+    if (txt.find('[') == -1) {
+      return false;
+    }
+    id = txt.substr(0,txt.find('['));
+    txt.erase(0,id.size());
+    txt.erase(0,1);
+
+    // Pega o primeiro valor inteiro.
+    std::string v1;
+    if (txt.find(']') == -1) {
+      return false;
+    }
+    v1 = txt.substr(0,txt.find(']'));
+    txt.erase(0,v1.size());
+
+    // Pega o segundo valor inteiro.
+    std::string v2;
+    if (*txt.end() == ';' && *(txt.end()-1) == ']') {
+      v2 = txt.substr(txt.begin()+1,txt.end()-2);
+      return tipo(t) && identificador(id) && valorInteiro(v1) && valorInteiro(v2);
+    }
+    return false;
+  }
+  if (txt.compare(0,3,"int") == 0) {
+    txt.erase(0,3);
+
+    // Pega o identificador.
+    std::string id;
+    if (*txt.end() == ";") {
+      id = txt.substr(txt.begin(), txt.end()-1);
+      return identificador(id);
+    }
+    return false;
+  }
+  if (txt.compare(0,2,"pf") == 0) {
+    txt.erase(0,2);
+
+    // Pega o identificador.
+    std::string id;
+    if (*txt.end() == ";") {
+      id = txt.substr(txt.begin(), txt.end()-1);
+      return identificador(id);
+    }
+    return false;
+  }
+  if (txt.compare(0,6,"logico") == 0) {
+    txt.erase(0,6);
+
+    // Pega o identificador.
+    std::string id;
+    if (*txt.end() == ";") {
+      id = txt.substr(txt.begin(), txt.end()-1);
+      return identificador(id);
+    }
+    return false;
+  }
+  if (txt.compare(0,5,"texto") == 0) {
+    txt.erase(0,5);
+
+    // Pega o identificador.
+    std::string id;
+    if (*txt.end() == ";") {
+      id = txt.substr(txt.begin(), txt.end()-1);
+      return identificador(id);
+    }
+    return false;
+  }
+  return false;
 }
 
 bool atribuicao(std::string txt) {
@@ -849,8 +956,11 @@ bool listadeIdentificadores(std::string txt) {
 
 }
 
-int tipo(std::string txt) {
-
+bool tipo(std::string txt) {
+  if (txt == "int" || txt == "pf" || txt == "logico" || txt == "texto") {
+    return true;
+  }
+  return false;
 }
 
 bool expressao(std::string txt) {
