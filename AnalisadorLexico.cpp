@@ -38,6 +38,12 @@ bool declaracao(std::string txt);
 
 bool tipo(std::string txt);
 
+bool valorInteiro(std::string txt);
+
+bool valor(std::string txt);
+
+bool letra(std::string txt);
+
 bool identificador(std::string txt);
 
 /* =================== Funções Auxiliares =================== */
@@ -988,11 +994,40 @@ bool valorReal(std::string txt) {
 }
 
 bool valorInteiro(std::string txt) {
-
+  if(txt.size() == 1) {
+    if(*txt.begin() == '0') {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+  if(*txt.begin() == '-'){
+    txt.erase(0,1);
+  }
+  if(std::isdigit(*txt.begin()) && *txt.begin() != '0') {
+    txt.erase(0,1);
+    return valor(txt);
+  }
+  else {
+    return false;
+  }
 }
 
 bool valor(std::string txt) {
-
+  if(txt.size() > 1) {
+    if(!std::isdigit(*txt.begin())) {
+      return false
+    }
+    txt.erase(0,1);
+    return valor(txt);
+  }
+  else {
+    if(!std::isdigit(*txt.begin())) {
+      return false
+    }
+    return true;
+  }
 }
 
 bool texto(std::string txt) {
@@ -1000,7 +1035,19 @@ bool texto(std::string txt) {
 }
 
 bool letra(std::string txt) {
-
+  if (txt.size() > 1) {
+    if (!std::isalpha(*txt.begin())) {
+      return false;
+    }
+    txt.erase(0,1);
+    return letra(txt);
+  }
+  else {
+    if (!std::isalpha(*txt.begin())) {
+      return false;
+    }
+    return true;
+  }
 }
 
 bool identificador(std::string txt) {
