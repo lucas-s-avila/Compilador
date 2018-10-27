@@ -46,6 +46,8 @@ bool letra(std::string txt);
 
 bool identificador(std::string txt);
 
+bool valorReal(std::string txt);
+
 /* =================== Funções Auxiliares =================== */
 
 int tam_tipo (std::string txt){
@@ -991,6 +993,36 @@ bool expressaoAritmetica_(std::string txt) {
 
 bool valorReal(std::string txt) {
 
+  if(*txt.begin() == '0') {
+    txt.erase(0,1);
+
+    if(*txt.begin() == '.') {
+      txt.erase(0,1);
+      return valor(txt);
+    }
+    return false;
+  }
+
+  else {
+    if (!std::isdigit(*txt.begin())) {
+      return false;
+    }
+    txt.erase(0,1);
+
+    if (txt.find('.') == -1) {
+      return false;
+    }
+    if (txt.find('.') == 0 && *txt.end() != '.') {
+      txt.erase(0,1);
+      return valor(txt);
+    }
+    if(*txt.end() != '.') {
+      std::string v1 == txt.substr(0,txt.find('.'));
+      std::string v2 == txt.substr(txt.find('.')+1);
+      return valor(v1) && valor(v2);
+    }
+    return false;
+  }
 }
 
 bool valorInteiro(std::string txt) {
