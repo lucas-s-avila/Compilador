@@ -75,7 +75,8 @@ std::string str_retorno(std::string txt) {
     return '';
   }
   for(i=0; txt[pos+i] != ";" && txt[pos+i] != *txt.end(), i++);
-  if(txt[pos+i] == *txt.end()) {
+
+  if (txt[pos+i] == *txt.end()) {
     return '';
   }
   return txt.substr(pos, i);
@@ -1064,6 +1065,53 @@ bool declaracao(std::string txt) {
 
 bool atribuicao(std::string txt) {
 
+  // Procura a igualdade no segundo caso.
+  int pos_igualdade = txt.find('=');
+  std::string texto = '';
+
+  // Verifica se é igualado a um texto.
+  if (txt[pos_igualdade+1] == '"') {
+    texto = txt.substr(pos_igualdade+2, txt.end()-1);
+  }
+  if (pos_igualdade>0) {
+    int pos_colchete_1 = txt.find('[');
+    if (pos_colchete_1>0 && pos_igualdade>pos_colchete_1) {
+      int pos_colchete_2 = txt.substr(pos_colchete_1+1, txt.end()).find('[');
+
+      // Procura caso de letras [Valor Inteiro][Valor_Inteiro].
+      if (pos_colchete_2>0 && pos_igualdade>pos_colchete_1) {
+        if (texto.size()>0) {
+
+
+          // Procura caso de letras [Valor Inteiro][Valor_Inteiro] = "texto".
+          return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-2)) && valorInteiro(txt.substr(pos_colchete_2+1, pos_igualdade-1)) && texto(texto));
+        }
+
+
+        // Procura caso de letras [Valor Inteiro][Valor_Inteiro] = Expressao.
+        return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-2)) && valorInteiro(txt.substr(pos_colchete_2+1, pos_igualdade-1)) && expressao(txt.substr(pos_igualdade+1, txt.end())));
+      }
+      if (texto.size()>0) {
+
+        // Procura caso de letras [Valor Inteiro] = "texto".
+        return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_igualdade-1)) && texto(texto));
+      }
+
+      // Procura caso de letras [Valor Inteiro] = Expressao.
+      return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_igualdade-1)) && expressao(txt.substr(pos_igualdade+1, txt.end())));
+    }
+
+    if (texto.size()>0) {
+
+      // Deriva em Letras = "texto".
+      return (letra(txt.substr(0, pos_igualdade-1)) && texto(texto));
+    } else {
+
+      // Deriva em Letras = expressao OU Letras = chamadadeFuncao.
+      return (letra(txt.substr(0, pos_igualdade-1)) && (chamadadeFuncao(txt.substr(pos_igualdade+1, txt.end())) || expressao(txt.substr(pos_igualdade+1, txt.end()))));
+    }
+  }
+  return false;
 }
 
 bool atribuicaodeEstrututra(std::string txt) {
