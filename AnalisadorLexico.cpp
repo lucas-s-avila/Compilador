@@ -42,6 +42,8 @@ bool valorInteiro(std::string txt);
 
 bool valor(std::string txt);
 
+bool texto(std::string txt);
+
 bool letra(std::string txt);
 
 bool identificador(std::string txt);
@@ -535,6 +537,18 @@ bool listadeComandos_(std::string txt) {
 bool comando(std::string txt) {
 
 
+  if (txt.compare(0,3, "leia")) {
+    txt.erase(0,3);
+    // Deriva em leia (Identificador).
+    return identificador(txt.substr(1,txt.end()-1));
+
+  }
+  if (txt.compare(0,7, "escreva")) {
+    txt.erase(0,7);
+    // Deriva em escreva (Identificador).
+    return identificador(txt.substr(1,txt.end()-1));
+
+  }
   int tam_tipo = tam_tipo(txt);
   // No caso da existencia no inicio de um Tipo: deriva em Tipo e Identificador.
   if (tam_tipo>0) {
@@ -546,7 +560,7 @@ bool comando(std::string txt) {
       pos_entao = txt.find("entao");
       if (pos_entao>0) {
         // Deriva em caso (expressaoLogica) entao {listadeComandos}
-        return (expressaoLogica(txt.substr(1, pos_entao-2)) && listadeComandos(txt.substr(pos_entao+6, txt.end()-1)))
+        return (expressaoLogica(txt.substr(1, pos_entao-2)) && listadeComandos(txt.substr(pos_entao+5, txt.end())))
       } else {
         return false;
       }
@@ -558,7 +572,7 @@ bool comando(std::string txt) {
         int tam_conteudo_entao = tam_funcao(txt.substr(pos_entao+5, txt.end()));
 
           // Deriva em escolha caso (expressaoLogica) entao {listadeComandos} <listadeCondicionalCaso>
-        return (expressaoLogica(txt.substr(1, pos_entao-2)) && listadeComandos(txt.substr(pos_entao+6, pos_entao+6+tam_conteudo_entao)) && listadeCondicionalCaso(txt.substr(pos_entao+6+tam_conteudo_entao, txt.end())))
+        return (expressaoLogica(txt.substr(1, pos_entao-2)) && listadeComandos(txt.substr(pos_entao+5, pos_entao+5+tam_conteudo_entao)) && listadeCondicionalCaso(txt.substr(pos_entao+5+tam_conteudo_entao, txt.end())))
       } else {
         return false;
       }
@@ -835,7 +849,111 @@ bool declaracaodeEstrutura(std::string txt) {
 }
 
 bool listadeDeclaracoes(std::string txt) {
+  if(txt.compare(0,3,"int") == 0) {
+    txt.erase(0,3);
+    if(txt.find(';') != -1) {
+      std::string id = txt.substr(0,txt.find(';'));
+      txt.erase(0,txt.find(';'));
+      if(txt.size()>0) {
+        return identificador(id) && listadeDeclaracoes(txt);
+      }
+      else {
+        return identificador(id);
+      }
+    }
+    return false;
+  }
+  if(txt.compare(0,2,"pf") == 0) {
+    txt.erase(0,2);
+    if(txt.find(';') != -1) {
+      std::string id = txt.substr(0,txt.find(';'));
+      if(txt.size()>0) {
+        return identificador(id) && listadeDeclaracoes(txt);
+      }
+      else {
+        return identificador(id);
+      }
+    }
+    return false;
+  }
+  if(txt.compare(0,6,"logico") == 0) {
+    txt.erase(0,6);
+    if(txt.find(';') != -1) {
+      std::string id = txt.substr(0,txt.find(';'));
+      if(txt.size()>0) {
+        return identificador(id) && listadeDeclaracoes(txt);
+      }
+      else {
+        return identificador(id);
+      }
+    }
+    return false;
+  }
+  if(txt.compare(0,5,"texto") == 0) {
+    txt.erase(0,5);
 
+    if(txt.find(';') != -1) {
+      std::string id = txt.substr(0,txt.find(';'));
+      if(txt.size()>0) {
+        return identificador(id) && listadeDeclaracoes(txt);
+      }
+      else {
+        return identificador(id);
+      }
+    }
+    return false;
+  }
+  if(txt.compare(0,5,"vetor") == 0) {
+    // Pega tipo.
+    int tam_t = tam_tipo(txt);
+    std::string t = txt.substr(0,tam_t);
+    txt.erase(0,tam_t);
+
+    if(txt.find("[") == -1 || txt.find(";") < txt.find("[")) {
+      return false;
+    }
+
+    if(txt.find("como") < txt.find("[") && txt.find("como") != -1) {
+      std::string id1 = txt.substr(0,txt.find("como"));
+      txt.erase(0,id1.size()+4);
+
+      std::string id2 = txt.substr(0,txt.find("["));
+      txt.erase(0,id2.size()+1);
+
+      if(txt.find("]") == -1) {
+        return false;
+      }
+      std::string v = txt.substr(0,txt.find("]"));
+      txt.erase(0,v.size()+1);
+
+      txt.erase(0,1);
+      if(txt.size() > 0) {
+        return tipo(t) && identificador(id1) && identificador(id2) && valorInteiro(v) && listadeDeclaracoes(txt);
+      }
+      return tipo(t) && identificador(id1) && identificador(id2) && valorInteiro(v);
+    }
+
+    if(txt.find("[") == -1) {
+      return false;
+    }
+    std::string id = txt.substr(0,txt.find("["));
+    txt.erase(0,id.size()+1);
+
+    if(txt.find("]") == -1) {
+      return false;
+    }
+    std::string v = txt.substr(0,txt.find("]"));
+    txt.erase(0,v.size()+1);
+
+    txt.erase(0,1);
+    if(txt.size() > 0) {
+      return tipo(t) && identificador(id) && valorInteiro(v) && listadeDeclaracoes(txt);
+    }
+    return tipo(t) && identificador(id) && valorInteiro(v);
+  }
+  if(txt.compare(0,6,"matriz") == 0) {
+
+  }
 }
 
 bool declaracao(std::string txt) {
@@ -957,7 +1075,22 @@ bool atribuicaodeAtributo(std::string txt) {
 }
 
 bool listadeCondicionalCaso(std::string txt) {
+  if (txt.compare(0,4, "caso")) {
+    txt.erase(0,4);
+    pos_entao = txt.find("entao");
+    if (pos_entao>0) {
+      int tam_entao = tam_funcao(txt.substr(pos_entao+4, txt.end()));
 
+      // Deriva em caso (expressaoLogica) entao {listadeComandos} listadeCondicionalCaso
+      return (expressaoLogica(txt.substr(1, pos_entao-2)) && listadeComandos_(txt.substr(pos_entao+6,pos_entao+4+tam_entao-2)) && listadeCondicionalCaso(txt.substr(pos_entao+4+tam_entao, txt.end())))
+    } else {
+      return false;
+    }
+  } else if (txt.compare(0, 14, "caso contrario")) {
+    txt.erase(0,14);
+    return (listadeComandos_(txt.begin()+1, txt.end()-1));
+  }
+  return false;
 }
 
 bool listadeIdentificadores(std::string txt) {
@@ -1063,7 +1196,26 @@ bool valor(std::string txt) {
 }
 
 bool texto(std::string txt) {
-
+  if(txt.size() == 1) {
+    if(*txt.begin() == '\0') {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+  if(std::isalnum(*txt.begin())) {
+    txt.erase(0,1);
+    return texto(txt);
+  }
+  std::string sym[] = {"_", "|", ",", ".", "<", ">", ":", "/", "?", "]", "[", "=", "+", "-", "*", "!", "@", "#", "%", " ", "\n"};
+  for(int i = 0; i < 21; i++) {
+    if(*txt.begin() == sym[i]) {
+      txt.erase(0,1);
+      return texto(txt);
+    }
+  }
+  return false;
 }
 
 bool letra(std::string txt) {
