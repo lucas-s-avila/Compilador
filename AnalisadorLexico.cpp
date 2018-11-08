@@ -82,7 +82,7 @@ std::string str_retorno(std::string txt) {
   return txt.substr(pos, i);
 }
 
-int tam_funcao(std::string txt){  // Pega a posição final i da função no txt baseado nas chaves.
+int tam_funcao(std::string txt) {  // Pega a posição final i da função no txt baseado nas chaves.
   int cont_chaves = 1;
   int i = 0;
 
@@ -905,11 +905,6 @@ bool listadeDeclaracoes(std::string txt) {
     return false;
   }
   if(txt.compare(0,5,"vetor") == 0) {
-    // Pega tipo.
-    int tam_t = tam_tipo(txt);
-    std::string t = txt.substr(0,tam_t);
-    txt.erase(0,tam_t);
-
     if(txt.find("[") == -1 || txt.find(";") < txt.find("[")) {
       return false;
     }
@@ -929,12 +924,17 @@ bool listadeDeclaracoes(std::string txt) {
 
       txt.erase(0,1);
       if(txt.size() > 0) {
-        return tipo(t) && identificador(id1) && identificador(id2) && valorInteiro(v) && listadeDeclaracoes(txt);
+        return identificador(id1) && identificador(id2) && valorInteiro(v) && listadeDeclaracoes(txt);
       }
-      return tipo(t) && identificador(id1) && identificador(id2) && valorInteiro(v);
+      return identificador(id1) && identificador(id2) && valorInteiro(v);
     }
 
-    if(txt.find("[") == -1) {
+    // Pega tipo.
+    int tam_t = tam_tipo(txt);
+    std::string t = txt.substr(0,tam_t);
+    txt.erase(0,tam_t);
+
+    if(txt.find("[") == -1 || txt.find(";") < txt.find("[")) {
       return false;
     }
     std::string id = txt.substr(0,txt.find("["));
@@ -953,8 +953,94 @@ bool listadeDeclaracoes(std::string txt) {
     return tipo(t) && identificador(id) && valorInteiro(v);
   }
   if(txt.compare(0,6,"matriz") == 0) {
+    if(txt.find("[") == -1 || txt.find(";") < txt.find("[")) {
+      return false;
+    }
 
+    if(txt.find("como") < txt.find("[") && txt.find("como") != -1) {
+      std::string id1 = txt.substr(0,txt.find("como"));
+      txt.erase(0,id1.size()+4);
+
+      std::string id2 = txt.substr(0,txt.find("["));
+      txt.erase(0,id2.size()+1);
+
+      if(txt.find("]") == -1) {
+        return false;
+      }
+      std::string v1 = txt.substr(0,txt.find("]"));
+      txt.erase(0,v1.size()+1);
+
+      if(txt.find("[") == -1 || txt.find(";") < txt.find("[")) {
+        return false;
+      }
+      if(txt.find("]") == -1) {
+        return false;
+      }
+      std::string v2 = txt.substr(0,txt.find("]"));
+      txt.erase(0,v2.size()+1);
+
+      txt.erase(0,1);
+      if(txt.size() > 0) {
+        return identificador(id1) && identificador(id2) && valorInteiro(v1) && valorInteiro(v2) && listadeDeclaracoes(txt);
+      }
+      return identificador(id1) && identificador(id2) && valorInteiro(v1) && valorInteiro(v2);
+    }
+    // Pega tipo.
+    int tam_t = tam_tipo(txt);
+    std::string t = txt.substr(0,tam_t);
+    txt.erase(0,tam_t);
+
+    if(txt.find("[") == -1 || txt.find(";") < txt.find("[")) {
+      return false;
+    }
+    std::string id = txt.substr(0,txt.find("["));
+    txt.erase(0,id.size()+1);
+
+    if(txt.find("]") == -1) {
+      return false;
+    }
+    std::string v1 = txt.substr(0,txt.find("]"));
+    txt.erase(0,v1.size()+1);
+
+    if(txt.find("[") == -1 || txt.find(";") < txt.find("[")) {
+      return false;
+    }
+    if(txt.find("]") == -1) {
+      return false;
+    }
+    std::string v2 = txt.substr(0,txt.find("]"));
+    txt.erase(0,v2.size()+1);
+
+    txt.erase(0,1);
+    if(txt.size() > 0) {
+      return tipo(t) && identificador(id) && valorInteiro(v1) && valorInteiro(v2) && listadeDeclaracoes(txt);
+    }
+    return tipo(t) && identificador(id) && valorInteiro(v1) && valorInteiro(v2);
   }
+  // Pega o identificador.
+  if (!std::isalpha(*txt.begin())) {
+    return false;
+  }
+  txt.erase(0,1);
+
+  int tam_i = tam_id(txt);
+  std::string letras = txt.substr(0, tam_i);
+  txt.erase(0, tam_i);
+
+  if(txt.find("como") == -1 || (txt.find("como") > txt.find(";")) {
+    return false;
+  }
+
+  if(txt.find(";") == -1) {
+    return false;
+  }
+  std::string id = txt.substr(0,txt.find(";"));
+  txt.erase(0,id.size()+1);
+
+  if(txt.size() > 0) {
+    return letra(letras) && identificador(id) && listadeDeclaracoes(txt);
+  }
+  return letra(letras) && identificador(id);
 }
 
 bool declaracao(std::string txt) {
@@ -1115,7 +1201,85 @@ bool atribuicao(std::string txt) {
 }
 
 bool atribuicaodeEstrututra(std::string txt) {
+  if(txt.compare(0,6,"matriz") == 0) {
+    if(txt.find("[") == -1) {
+      return false;
+    }
+    if(txt.find("como") < txt.find("[") && txt.find("como") != -1) {
+      std::string id1 = txt.substr(0,txt.find("como"));
+      txt.erase(0,id1.size()+4);
 
+      std::string id2 = txt.substr(0,txt.find("["));
+      txt.erase(0,id2.size()+1);
+
+      if(txt.find("]") == -1) {
+        return false;
+      }
+      std::string v1 = txt.substr(0,txt.find("]"));
+      txt.erase(0,v1.size()+1);
+
+      if(txt.find("[") == -1) {
+        return false;
+      }
+      if(txt.find("]") == -1) {
+        return false;
+      }
+      std::string v2 = txt.substr(0,txt.find("]"));
+      txt.erase(0,v2.size()+1);
+
+      if(txt.find(";") == -1) {
+        return false;
+      }
+      txt.erase(0,1);
+      return identificador(id1) && identificador(id2) && valorInteiro(v1) && valorInteiro(v2);
+    }
+    return false;
+  }
+  if(txt.compare(0,5,"vetor") == 0) {
+    if(txt.find("[") == -1) {
+      return false;
+    }
+    if(txt.find("como") < txt.find("[") && txt.find("como") != -1) {
+      std::string id1 = txt.substr(0,txt.find("como"));
+      txt.erase(0,id1.size()+4);
+
+      std::string id2 = txt.substr(0,txt.find("["));
+      txt.erase(0,id2.size()+1);
+
+      if(txt.find("]") == -1) {
+        return false;
+      }
+      std::string v = txt.substr(0,txt.find("]"));
+      txt.erase(0,v.size()+1);
+
+      if(txt.find(";") == -1) {
+        return false;
+      }
+      txt.erase(0,1);
+      return identificador(id1) && identificador(id2) && valorInteiro(v);
+    }
+    return false;
+  }
+  if (!std::isalpha(*txt.begin())) {
+    return false;
+  }
+  txt.erase(0,1);
+
+  int tam_i = tam_id(txt);
+  std::string letras = txt.substr(0, tam_i);
+  txt.erase(0, tam_i);
+
+  if(txt.find("como") == -1 || (txt.find("como") > txt.find(";")) {
+    return false;
+  }
+
+  if(txt.find(";") == -1) {
+    return false;
+  }
+  std::string id = txt.substr(0,txt.find(";"));
+  txt.erase(0,id.size()+1);
+
+  return letra(letras) && identificador(id);
 }
 
 bool atribuicaodeAtributo(std::string txt) {
