@@ -1317,6 +1317,136 @@ bool tipo(std::string txt) {
 }
 
 bool expressao(std::string txt) {
+  if (txt.compare(0,1, '-')) {
+    txt.erase(0,1);
+    if (std::isalpha(*txt.begin()) || txt.compare(0,1, '(')) {
+      // Deriva em - Expressao Aritmetica OU - Expressao Logica
+      return (expressaoAritmetica(txt) || expressaoLogica(txt));
+    }
+  }
+  if (txt.compare(0,1, '(')) {
+    txt.erase(0,1);
+    int tam_parenteses = 0;
+    for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!=')'; it++) {
+      tam_parenteses++;
+    }
+    // Deriva em (Expressão Aritmetica) Expressao Aritmetica OU (Expressão Aritmetica) Expressao logica OU (Expressão Logica) Expressao Logica
+    return ((expressaoAritmetica(txt.substr(txt.begin(), j)) && (expressaoAritmetica(txt.substr(j+2, txt.end())) || expressaoLogica(txt.substr(j+2, txt.end())))) || (expressaoLogica(txt.substr(txt.begin(), j)) && expressaoLogica(txt.substr(j+2, txt.end()))));
+  }
+  if (txt.compare(0,10, "Verdadeiro")) {
+    txt.erase(0,10);
+    // Deriva em Verdadeiro Expressao Logica
+    return (expressaoLogica(txt));
+  }
+  if (txt.comparre(0,5, "Falso")) {
+    txt.erase(0,5);
+    // Deriva em Falso Expressao logica
+    return (expressaoLogica(txt));
+  }
+  if (std::isalpha(*txt.begin())) {
+    int pos_expressao = 0;
+    for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
+      pos_expressao++;
+    }
+    if (it!=txt.end()) {
+      // Deriva em <letras> <expressaoAritmetica> OU <letras> <expressaoLogica>
+      return (letra(txt.substr(txt.begin(), pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
+    }
+
+    int pos_colchete_1 = txt.find('[');
+    int pos_colchete_2 = txt.find(']');
+    int pos_colchete_3 = txt.substr(pos_colchete_2, txt.end()).find('[');
+    int pos_colchete_4 = txt.substr(pos_colchete_2, txt.end()).find(']');
+    if (pos_colchete_1>0) {
+      if (pos_colchete_3>0) {
+        // Deriva em <Letras> [Valor Inteiro][Valor Inteiro] <expressaoAritmetica> OU <Letras> [Valor Inteiro][Valor Inteiro] <expressaoLogica>
+        return (letra(txt.substr(txt.begin(), pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-1)) && valorInteiro(txt.substr(pos_colchete_2+pos_colchete_3+1, pos_colchete_2+pos_colchete_4-1)) && (expressaoAritmetica(txt.substr(pos_colchete_2+pos_colchete_4+1, txt.end())) || expressaoLogica(txt.substr(pos_colchete_2+pos_colchete_4+1, txt.end()))));
+      }
+      // Deriva em <Letras> [Valor Inteiro] <expressaoAritmetica> OU <Letras> [Valor Inteiro][Valor Inteiro] <expressaoLogica>
+      return (letra(txt.substr(txt.begin(), pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-1)) && (expressaoAritmetica(txt.substr(pos_colchete_2+pos_colchete_4+1, txt.end())) || expressaoLogica(txt.substr(pos_colchete_2+pos_colchete_4+1, txt.end()))));
+    }
+    return (letra(txt.substr(txt.begin(), pos_expressao));
+
+  }
+
+  if (txt.compare(0,1, '!')) {
+    txt.erase(0,1);
+    return  expressaoLogica(txt);
+  }
+  std::string inteiros[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+  if (txt.compare(0,1, '-')) {
+    txt.erase(0,1);
+    bool inteiro = false;
+    for (size_t i = 0; i < 10; i++) {
+      if ((txt.substr(0,1)).find(tipos[i]) > 0) {
+        inteiro = true;
+        break;
+      }
+    }
+    if (inteiro) {
+      int pos_ponto = txt.find('.');
+      if (pos_ponto>0) {
+        int pos_expressao = 0;
+        for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
+          pos_expressao++;
+        }
+        if (it!=txt.end()) {
+          // Deriva em - Valor . Valor <expressaoAritmetica> OU - Valor . Valor <expressaoLogica>
+          return (valor(txt.substr(txt.begin(), pos_ponto)) && valor(txt.substr(pos_ponto+2, pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
+        }
+
+        // Deriva em - Valor . Valor
+        return (valor(txt.substr(txt.begin(), pos_ponto)) && valor(txt.substr(pos_ponto+2, pos_expressao)));
+      }
+      int pos_expressao = 0;
+      for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
+        pos_expressao++;
+      }
+      if (it!=txt.end()) {
+        // Deriva em - Valor . Valor <expressaoAritmetica> OU - Valor . Valor <expressaoLogica>
+        return (valor(txt.substr(txt.begin(), pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
+      }
+
+      // Deriva em - Valor
+      return (valor(txt.substr(txt.begin(), pos_expressao));
+    }
+  } else {
+    bool inteiro = false;
+    for (size_t i = 0; i < 10; i++) {
+      if ((txt.substr(0,1)).find(tipos[i]) > 0) {
+        inteiro = true;
+        break;
+      }
+    }
+    if (inteiro) {
+      int pos_ponto = txt.find('.');
+      if (pos_ponto>0) {
+        int pos_expressao = 0;
+        for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
+          pos_expressao++;
+        }
+        if (it!=txt.end()) {
+          // Deriva em  Valor . Valor <expressaoAritmetica> OU  Valor . Valor <expressaoLogica>
+          return (valor(txt.substr(txt.begin(), pos_ponto)) && valor(txt.substr(pos_ponto+2, pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
+        }
+
+        // Deriva em Valor . Valor
+        return (valor(txt.substr(txt.begin(), pos_ponto)) && valor(txt.substr(pos_ponto+2, pos_expressao)));
+      }
+      int pos_expressao = 0;
+      for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
+        pos_expressao++;
+      }
+      if (it!=txt.end()) {
+        // Deriva em Valor <expressaoAritmetica> OU  Valor <expressaoLogica>
+        return (valor(txt.substr(txt.begin(), pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
+      }
+
+      // Deriva em Valor
+      return (valor(txt.substr(txt.begin(), pos_expressao));
+    }
+  }
+  return false;
 
 }
 
