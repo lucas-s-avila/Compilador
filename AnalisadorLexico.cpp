@@ -4,6 +4,8 @@
 
 /* =================== Declaração das Funções =================== */
 
+std::string tira_esp(std::string txt);
+
 int tam_tipo (std::string txt);
 
 int tam_funcao(std::string txt);
@@ -51,6 +53,28 @@ bool identificador(std::string txt);
 bool valorReal(std::string txt);
 
 /* =================== Funções Auxiliares =================== */
+
+int c, l;
+
+std::string tira_esp(std::string txt) {
+  // Exclui espaços, tabulações e quebras de linhas da string.
+  for(std::string::iterator it=txt.begin(); it!=entrada.end() && (*it == '\u0020' || *it == '\u000a');) {
+    if(*it == '\u0020') {
+      entrada.erase(it);
+      c++;
+    }
+    else {
+      if(*it == '\u000a') {
+        l++;
+        c=0;
+      }
+      else {
+        it++;
+      }
+    }
+  }
+  return txt;
+}
 
 int tam_tipo (std::string txt){
   std::string tipos[] = {"int", "pf", "logico", "texto"};
@@ -1588,19 +1612,11 @@ bool identificador(std::string txt) {
 
 int main() {
 
+  c=0;
+  l=0;
   // Lê o arquivo passado como: "./exemplo < <nome_do_arquivo>.txt".
   std::string entrada(std::istreambuf_iterator<char>(std::cin), std::istreambuf_iterator<char>());
   entrada.pop_back();
-
-  // Exclui espaços, tabulações e quebras de linhas da string.
-  for(std::string::iterator it=entrada.begin(); it!=entrada.end();) {
-    if(*it == '\u0020' || *it == '\u000a' ) {
-      entrada.erase(it);
-    }
-    else {
-      it++;
-    }
-  }
 
   // Retorna a análise da gramática.
   std::cout << programa(entrada) << std::endl;
