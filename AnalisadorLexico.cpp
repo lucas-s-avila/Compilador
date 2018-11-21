@@ -58,18 +58,16 @@ int c, l;
 
 std::string tira_esp(std::string txt) {
   // Exclui espaços, tabulações e quebras de linhas da string.
-  for(std::string::iterator it=txt.begin(); it!=entrada.end() && (*it == '\u0020' || *it == '\u000a');) {
+  for(std::string::iterator it=txt.begin(); it!=txt.end() && (*it == '\u0020' || *it == '\u000a');) {
     if(*it == '\u0020') {
-      entrada.erase(it);
+      txt.erase(it);
       c++;
     }
     else {
       if(*it == '\u000a') {
+        txt.erase(it);
         l++;
         c=0;
-      }
-      else {
-        it++;
       }
     }
   }
@@ -177,21 +175,27 @@ int tam_id(std::string txt) {
 bool programa(std::string txt_original) {
   // Começa com principal?
   txt = txt_original;
+  txt = tira_esp(txt);
   if(txt.compare(0,9,"principal") == 0) {
     txt.erase(0,9);
+    c += 9;
     // Pega a lista de comandos.
+    txt = tira_esp(txt);
     int tam_programa = tam_funcao(txt);
     if (tam_programa < 0) {
+      std::cout << l << ", " << c << "\n";
       return false;
     }
+    c++;
     if (*txt.end() == txt[tam_programa]) {
-      return listadeComandos(txt.substr(0,tam_programa));
+      return listadeComandos(txt.substr(1,tam_programa-1));
     }
     else {
-      return listadeComandos(txt.substr(0,tam_programa)) && listadeFuncoes(txt.substr(tam_programa));
+      return listadeComandos(txt.substr(1,tam_programa-1)) && listadeFuncoes(txt.substr(tam_programa));
     }
   }
   else {
+    std::cout << l << ", " << c << "\n";
     return false;
   }
 }
