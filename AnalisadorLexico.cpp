@@ -1479,7 +1479,18 @@ bool expressao(std::string txt) {
 }
 
 bool expressaoLogica(std::string txt) {
-
+  if (txt.size()<2) {
+    return true;
+  }
+  if (txt.compare(0,2, "**") || txt.compare(0,2, "++") || txt.compare(0,2, "==") || txt.compare(0,2, "!=") || txt.compare(0,2, "<=") || txt.compare(0,2, ">=")) {
+    txt.erase(0,2);
+    return expressao(txt);
+  }
+  if (txt.compare(0,1, "<") || txt.compare(0,1, ">")) {
+    txt.erase(0,1);
+    return expressao(txt);
+  }
+  return false;
 }
 
 bool expressaoLogica_(std::string txt) {
@@ -1487,7 +1498,14 @@ bool expressaoLogica_(std::string txt) {
 }
 
 bool expressaoAritmetica(std::string txt) {
-
+  if (txt.size()<2) {
+    return true;
+  }
+  if (txt.compare(0,1, "*") || txt.compare(0,1, "/") || txt.compare(0,1, "%") || txt.compare(0,1, "+") || txt.compare(0,1, "-")) {
+    txt.erase(0,1);
+    return expressao(txt);
+  }
+  return false;
 }
 
 bool expressaoAritmetica_(std::string txt) {
