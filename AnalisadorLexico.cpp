@@ -381,13 +381,19 @@ bool listadeParametros(std::string txt) {
 }
 
 bool listadeParametros_(std::string txt) {
+  txt = tira_esp(txt);
+
   // Pega a virgula.
   if(txt[0] == ',') {
     txt.erase(0,1);
+    c += 1;
   }
   else {
+    std::cout << l << "; " << c << "\n";
     return false;
   }
+
+  txt = tira_esp(txt);
 
   int i=0;
   for (std::string::iterator it=i; it!=txt.end() && *it!=','; it++) {
