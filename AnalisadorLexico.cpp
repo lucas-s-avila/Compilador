@@ -412,6 +412,7 @@ bool listadeParametros_(std::string txt) {
 }
 
 bool parametro(std::string txt) {
+  txt = tira_esp(txt);
 
   int tam_tipo = tam_tipo(txt);
   // No caso da existencia no inicio de um Tipo: deriva em Tipo e Identificador.
@@ -421,6 +422,10 @@ bool parametro(std::string txt) {
   } else {
     if(txt.compare(0,5, "vetor") == 0) {
       txt.erase(0,5);
+      c += 5;
+
+      txt = tira_esp(txt);
+
       int tam_tipo = tam_tipo(txt);
       // Deriva para caso exista um Tipo
       if (tam_tipo>0) {
@@ -467,8 +472,15 @@ bool parametro(std::string txt) {
       }
     }
     if(txt.compare(0,6, "matriz") == 0) {
+      txt = tira_esp(txt);
+
       txt.erase(0,6);
+      c += 6;
+
       int tam_tipo = tam_tipo(txt);
+
+      txt = tira_esp(txt);
+      
       // Deriva para caso exista um Tipo
       if (tam_tipo>0) {
         // Encontra o Identificador
