@@ -480,7 +480,7 @@ bool parametro(std::string txt) {
       int tam_tipo = tam_tipo(txt);
 
       txt = tira_esp(txt);
-      
+
       // Deriva para caso exista um Tipo
       if (tam_tipo>0) {
         // Encontra o Identificador
@@ -545,18 +545,26 @@ bool parametro(std::string txt) {
 }
 
 bool comandodeRetorno(std::string txt) {
-  if (txt.compare(0,8,"retorno=")) {
-    txt.erase(0,8);
-    return expressao(txt.substr(txt.begin(), txt.end()-1));
+  txt = tira_esp(txt);
+  if (txt.compare(0,7,"retorno")) {
+    txt.erase(0,7);
+    c += 7;
+    txt = tira_esp(txt);
+    if(txt.compare(0,1,"=")) {
+        txt.erase(0,1);
+        c++;
+        txt = tira_esp(txt);
+        return expressao(txt.substr(txt.begin(), txt.end()-1));
+    }
   }
-  else {
-    return false;
-  }
+  return false;
 }
 
 bool listadeComandos(std::string txt) {
+  txt = tira_esp(txt);
   if (txt[0] = '{') {
     txt.erase(0,1);
+    c++;
   } else{
     return false
   }
