@@ -183,19 +183,18 @@ bool programa(std::string txt_original) {
     txt = tira_esp(txt);
     int tam_programa = tam_funcao(txt);
     if (tam_programa < 0) {
-      std::cout << l << ", " << c << "\n";
+      std::cout << l << "; " << c << "\n";
       return false;
     }
-    c++;
     if (*txt.end() == txt[tam_programa]) {
-      return listadeComandos(txt.substr(1,tam_programa-1));
+      return listadeComandos(txt.substr(0,tam_programa));
     }
     else {
-      return listadeComandos(txt.substr(1,tam_programa-1)) && listadeFuncoes(txt.substr(tam_programa));
+      return listadeComandos(txt.substr(0,tam_programa)) && listadeFuncoes(txt.substr(tam_programa));
     }
   }
   else {
-    std::cout << l << ", " << c << "\n";
+    std::cout << l << "; " << c << "\n";
     return false;
   }
 }
@@ -205,70 +204,97 @@ bool listadeFuncoes(std::string txt_original) {
 
   // Verifica qual o tipo de retorno da função.
   std::string txt = txt_original;
+  txt = tira_esp(txt);
   if(txt.compare(0,3, "int") == 0) {
+    c += 3;
     txt.erase(0,3);
+    txt = tira_esp(txt);
 
     return funcaoretorno(txt);
   }
   if(txt.compare(0,2, "pf") == 0) {
+    c += 2;
     txt.erase(0,2);
+    txt = tira_esp(txt);
 
     return funcaoretorno(txt);
   }
   if(txt.compare(0,6, "logico") == 0) {
+    c += 6;
     txt.erase(0,6);
+    txt = tira_esp(txt);
 
     return funcaoretorno(txt);
   }
   if(txt.compare(0,5, "texto") == 0) {
+    c += 5;
     txt.erase(0,5);
+    txt = tira_esp(txt);
 
     return funcaoretorno(txt);
   }
   if(txt.compare(0,5, "vetor") == 0) {
+    c += 5;
     txt.erase(0,5);
+    txt = tira_esp(txt);
 
     // Pega tipo.
     int tam_t = tam_tipo(txt);
     std::string t = txt.substr(0,tam_t);
+    c += tam_t;
     txt.erase(0,tam_t);
+    txt = tira_esp(txt);
 
     return tipo(t) && funcaoretorno(txt);
   }
   if(txt.compare(0,6, "matriz") == 0) {
+    c += 6;
     txt.erase(0,6);
+    txt = tira_esp(txt);
 
     // Pega tipo.
     int tam_t = tam_tipo(txt);
     std::string t = txt.substr(0,tam_t);
+    c += tam_t;
     txt.erase(0,tam_t);
+    txt = tira_esp(txt);
 
     return tipo(t) && funcaoretorno(txt);
   }
   else {
     // Pega o identificador.
     if (!std::isalpha(*txt.begin())) {
+      std::cout << l << "; " << c << "\n";
       return false;
     }
+    c += 1;
     txt.erase(0,1);
+    txt = tira_esp(txt);
 
     int tam_i = tam_id(txt);
     std::string letras = txt.substr(0, tam_i);
+    c += tam_i;
     txt.erase(0, tam_i);
+    txt = tira_esp(txt);
 
     // Pega a lista de parâmetros.
     int tam_p = tam_param(txt);
     if (tam_p < 0) {
+      std::cout << l << "; " << c << "\n";
       return false;
     }
     std::string parametros = txt.substr(0, tam_p);
+    c += tam_p;
     txt.erase(0,tam_p);
+    txt = tira_esp(txt);
 
     // Pega a lista de comandos (tamanho da função).
     int tam_f = tam_funcao(txt);
     if (tam_f < 0) {
-          return false;
+      std::cout << l << "; " << c << "\n";
+      return false;
     }
+    c += 1;
     if (txt[tam_f] == *txt.end()) {
       return letra(letras) && listadeParametros(parametros) && listadeComandos_(txt.substr(1, tam_f-2);
     }
@@ -279,32 +305,41 @@ bool listadeFuncoes(std::string txt_original) {
 }
 
 bool funcaoretorno(std::string txt) {
-  // Pega o retorno.
-  std::string retorno = str_retorno(txt);
-  if (retorno == '') {
-    return false;
-  }
-  txt.erase(txt.find(retorno), retorno.size());
-
+  txt = tira_esp(txt);
   // Pega o identificador.
   int tam_i = tam_id(txt)
   std::string id = txt.substr(0, tam_i);
+  c += tam_i;
   txt.erase(0, tam_i);
+  txt = tira_esp(txt);
 
   // Pega a lista de parâmetros.
   int tam_p = tam_param(txt);
   if (tam_p < 0) {
+    std::cout << l << "; " << c << "\n";
     return false;
   }
   std::string parametros = txt.substr(0, tam_param);
+  c += tam_param;
   txt.erase(0,tam_param);
+  txt = tira_esp(txt);
 
   // Pega a lista de comandos (tamanho da função).
   int tam_f = tam_funcao(txt);
   if (tam_f < 0) {
+    std::cout << l << "; " << c << "\n";
     return false;
   }
 
+  // Pega o retorno.
+  std::string retorno = str_retorno(txt);
+  if (retorno == '') {
+    std::cout << l << "; " << c << "\n";
+    return false;
+  }
+  txt.erase(txt.find(retorno), retorno.size());
+
+  c++;
   // Deriva.
   if (tam_f == 0) {
     return identificador(id) && listadeParametros(parametros) && listadeComandos_(txt.substr(1, tam_f-2) && comandodeRetorno(retorno);
@@ -315,35 +350,50 @@ bool funcaoretorno(std::string txt) {
 }
 
 bool listadeParametros(std::string txt) {
+  txt = tira_esp(txt);
   if(txt.compare(0,1, '(') == 0) {
     txt.erase(0);
+    c++;
   }
+  txt = tira_esp(txt);
   if (txt.compare(0,1, ')') == 0) {
+    c++;
     return true;
   }
+  txt = tira_esp(txt);
   int i = 0;
   for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!=','; it++) {
     i++;
   }
+  c += i;
+  txt = tira_esp(txt);
 
   //  Caso so tenha um parametro deriva em Parametro.
   if (txt[i] == ')') {
+    c += 1;
     return parametro(txt.substr(0,i-1));
   }
 
   //  Deriva em Parametro listadeParametros_.
+  c += 1;
   return parametro(txt.substr(0,i-1)) && listadeParametros_(txt.substr(i,txt.end()-1));
 
 }
 
 bool listadeParametros_(std::string txt) {
+  txt = tira_esp(txt);
+
   // Pega a virgula.
   if(txt[0] == ',') {
     txt.erase(0,1);
+    c += 1;
   }
   else {
+    std::cout << l << "; " << c << "\n";
     return false;
   }
+
+  txt = tira_esp(txt);
 
   int i=0;
   for (std::string::iterator it=i; it!=txt.end() && *it!=','; it++) {
@@ -362,6 +412,7 @@ bool listadeParametros_(std::string txt) {
 }
 
 bool parametro(std::string txt) {
+  txt = tira_esp(txt);
 
   int tam_tipo = tam_tipo(txt);
   // No caso da existencia no inicio de um Tipo: deriva em Tipo e Identificador.
@@ -371,6 +422,10 @@ bool parametro(std::string txt) {
   } else {
     if(txt.compare(0,5, "vetor") == 0) {
       txt.erase(0,5);
+      c += 5;
+
+      txt = tira_esp(txt);
+
       int tam_tipo = tam_tipo(txt);
       // Deriva para caso exista um Tipo
       if (tam_tipo>0) {
@@ -417,8 +472,15 @@ bool parametro(std::string txt) {
       }
     }
     if(txt.compare(0,6, "matriz") == 0) {
+      txt = tira_esp(txt);
+
       txt.erase(0,6);
+      c += 6;
+
       int tam_tipo = tam_tipo(txt);
+
+      txt = tira_esp(txt);
+
       // Deriva para caso exista um Tipo
       if (tam_tipo>0) {
         // Encontra o Identificador
@@ -483,18 +545,26 @@ bool parametro(std::string txt) {
 }
 
 bool comandodeRetorno(std::string txt) {
-  if (txt.compare(0,8,"retorno=")) {
-    txt.erase(0,8);
-    return expressao(txt.substr(txt.begin(), txt.end()-1));
+  txt = tira_esp(txt);
+  if (txt.compare(0,7,"retorno")) {
+    txt.erase(0,7);
+    c += 7;
+    txt = tira_esp(txt);
+    if(txt.compare(0,1,"=")) {
+        txt.erase(0,1);
+        c++;
+        txt = tira_esp(txt);
+        return expressao(txt.substr(txt.begin(), txt.end()-1));
+    }
   }
-  else {
-    return false;
-  }
+  return false;
 }
 
 bool listadeComandos(std::string txt) {
+  txt = tira_esp(txt);
   if (txt[0] = '{') {
     txt.erase(0,1);
+    c++;
   } else{
     return false
   }
