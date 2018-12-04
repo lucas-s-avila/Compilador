@@ -355,6 +355,11 @@ bool listadeParametros(std::string txt) {
     txt.erase(0);
     c++;
   }
+  else {
+    std::cout << l << "; " << c << "\n";
+    return false;
+  }
+
   txt = tira_esp(txt);
   if (txt.compare(0,1, ')') == 0) {
     c++;
@@ -376,7 +381,7 @@ bool listadeParametros(std::string txt) {
 
   //  Deriva em Parametro listadeParametros_.
   c += 1;
-  return parametro(txt.substr(0,i-1)) && listadeParametros_(txt.substr(i,txt.end()-1));
+  return parametro(txt.substr(0,i-1)) && listadeParametros_(txt.substr(i,txt.end()));
 
 }
 
@@ -406,8 +411,12 @@ bool listadeParametros_(std::string txt) {
   }
 
   //  Caso so tenha um parametro deriva em Parametro.
+  if (txt.end()== ')') {
+    return parametro(txt.substr(txt.begin(), txt.end()-1));
+  }
   else {
-    return parametro(txt);
+    std::cout << l << "; " << c << "\n";
+    return false;
   }
 }
 
@@ -419,7 +428,7 @@ bool parametro(std::string txt) {
   if (tam_tipo>0) {
     return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo, txt.end())));
 
-  } else {
+  } else if (tam_tipo<=0) {
     if(txt.compare(0,5, "vetor") == 0) {
       txt.erase(0,5);
       c += 5;
@@ -436,8 +445,12 @@ bool parametro(std::string txt) {
         }
 
         //  Deriva em Tipo Identificador;
-        if (j==txt.end()) {
+        if (*it==txt.end()) {
           return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo,txt.end())));
+        } else if (*it!='[') {
+          c+=j;
+          std::cout << l << "; " << c << "\n";
+          return false;
         }
 
         // Encontra o Valor_Inteiro
@@ -445,12 +458,25 @@ bool parametro(std::string txt) {
         for(std::string::iterator it=j+2; it!=txt.end() && *it!=']'; it++) {
           k++;
         }
+
+        if (*it!=']') {
+         c+=k;
+         std::cout << l << "; " << c << "\n";
+         return false;
+        }
+
         //  Deriva em Tipo Identificador [Valor_Inteiro];
         return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo, j)) && valor_inteiro(txt.substr(j+2, k)));
 
       // Deriva para caso não exista um Tipo
       } else {
         int pos_como = txt.find("como");
+
+        if (pos_como<0) {
+          std::cout << l << "; " << c << "\n";
+          return false;
+        }
+
         int j = pos_como+4;
         // Encontra o Identificador
         for(std::string::iterator it=tam_tipo; it!=txt.end() && *it!='['; it++) {
@@ -458,8 +484,12 @@ bool parametro(std::string txt) {
         }
 
         //  Deriva em Identificador como Identificador;
-        if (j==txt.end()) {
+        if (*it==txt.end()) {
           return (identificador(txt.substr(0,pos_como-1)) && identificador(txt.substr(pos_como+4,txt.end())));
+        } else if (*it!='[') {
+          c+=j;
+          std::cout << l << "; " << c << "\n";
+          return false;
         }
 
         // Encontra o Valor_Inteiro
@@ -467,6 +497,13 @@ bool parametro(std::string txt) {
         for(std::string::iterator it=j+2; it!=txt.end() && *it!=']'; it++) {
           k++;
         }
+
+        if (*it!=']') {
+          c+=k;
+          std::cout << l << "; " << c << "\n";
+          return false;
+        }
+
         //  Deriva em Identificador como Identificador[Valor_Inteiro];
         return (identificador(txt.substr(0,pos_como-1)) && identificador(txt.substr(pos_como+4,j)) && valor_inteiro(txt.substr(j+2, k)));
       }
@@ -479,8 +516,6 @@ bool parametro(std::string txt) {
 
       int tam_tipo = tam_tipo(txt);
 
-      txt = tira_esp(txt);
-
       // Deriva para caso exista um Tipo
       if (tam_tipo>0) {
         // Encontra o Identificador
@@ -490,8 +525,13 @@ bool parametro(std::string txt) {
         }
 
         //  Deriva em Tipo Identificador;
-        if (j==txt.end()) {
+        if (*it==txt.end()) {
           return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo,txt.end())));
+        }
+        else if (*it!='[') {
+          c+=j;
+          std::cout << l << "; " << c << "\n";
+          return false;
         }
 
         // Encontra o primeiro Valor_Inteiro
@@ -500,10 +540,22 @@ bool parametro(std::string txt) {
           k++;
         }
 
+        if (*it!=']') {
+          c+=k;
+          std::cout << l << "; " << c << "\n";
+          return false;
+        }
+
         // Encontra o segundo Valor_Inteiro
         int x = k+3;
         for(std::string::iterator it=k+3; it!=txt.end() && *it!=']'; it++) {
           x++;
+        }
+
+        if (*it!=']') {
+          c+=x;
+          std::cout << l << "; " << c << "\n";
+          return false;
         }
 
         //  Deriva em Tipo Identificador [Valor_Inteiro];
@@ -512,6 +564,12 @@ bool parametro(std::string txt) {
       // Deriva para caso não exista um Tipo
       } else {
         int pos_como = txt.find("como");
+
+        if (pos_como<0) {
+          std::cout << l << "; " << c << "\n";
+          return false;
+        }
+
         int j = pos_como+4;
         // Encontra o Identificador
         for(std::string::iterator it=tam_tipo; it!=txt.end() && *it!='['; it++) {
@@ -519,8 +577,12 @@ bool parametro(std::string txt) {
         }
 
         //  Deriva em Identificador como Identificador;
-        if (j==txt.end()) {
+        if (*it==txt.end()) {
           return (identificador(txt.substr(0,pos_como-1)) && identificador(txt.substr(pos_como+4,txt.end())));
+        } else if (*it!='[') {
+          c+=j;
+          std::cout << l << "; " << c << "\n";
+          return false;
         }
 
         // Encontra o primeiro Valor_Inteiro
@@ -529,10 +591,22 @@ bool parametro(std::string txt) {
           k++;
         }
 
+        if (*it!=']') {
+          c+=k;
+          std::cout << l << "; " << c << "\n";
+          return false;
+        }
+
         // Encontra o segundo Valor_Inteiro
         int x = k+3;
         for(std::string::iterator it=k+3; it!=txt.end() && *it!=']'; it++) {
           x++;
+        }
+
+        if (*it!=']') {
+          c+=x;
+          std::cout << l << "; " << c << "\n";
+          return false;
         }
 
         //  Deriva em Identificador como Identificador[Valor_Inteiro][Valor_Inteiro];
@@ -540,8 +614,10 @@ bool parametro(std::string txt) {
       }
     }
   }
-
-
+  else {
+    std::cout << l << "; " << c << "\n";
+    return false;
+  }
 }
 
 bool comandodeRetorno(std::string txt) {
@@ -557,6 +633,7 @@ bool comandodeRetorno(std::string txt) {
         return expressao(txt.substr(txt.begin(), txt.end()-1));
     }
   }
+  std::cout << l << "; " << c << "\n";
   return false;
 }
 
@@ -566,7 +643,8 @@ bool listadeComandos(std::string txt) {
     txt.erase(0,1);
     c++;
   } else{
-    return false
+    std::cout << l << "; " << c << "\n";
+    return false;
   }
   return listadeComandos_(txt.substr(0, txt.end()-1));
 }
@@ -577,14 +655,24 @@ bool listadeComandos_(std::string txt) {
     i++;
   }
   if (txt[i] == *txt.end()) {
+    std::cout << l << "; " << c << "\n";
     return false;
   }
   // Levar para Comando o tamanho exato do Escolha Caso;
   if (txt.compare(0,12, "escolha caso")) {
+    txt = tira_esp(txt);
+
     txt_auxiliar = txt;
     txt_auxiliar.erase(0,12);
     int i = 12;
     pos_entao = txt_auxiliar.find("entao");
+
+    if (pos_entao<0) {
+      c+=i;
+      std::cout << l << "; " << c << "\n";
+      return false;
+    }
+
     i+=pos_entao+5;
     txt_auxiliar.erase(0, pos_entao+4);
     tam_escolha = tam_funcao(txt_auxiliar);
@@ -595,6 +683,13 @@ bool listadeComandos_(std::string txt) {
         i+=4;
         txt_auxiliar.erase(0,4);
         pos_entao = txt_auxiliar.find("entao");
+
+        if (pos_entao<0) {
+          c+=i;
+          std::cout << l << "; " << c << "\n";
+          return false;
+        }
+
         i+=pos_entao+5;
         txt_auxiliar.erase(0, pos_entao+4);
         tam_escolha = tam_funcao(txt_auxiliar);
@@ -616,11 +711,18 @@ bool listadeComandos_(std::string txt) {
   }
 
   // Levar para Comando o tamanho exato do Caso;
-  if (txt.compare(0,4, "caso")) {
+  else if (txt.compare(0,4, "caso")) {
     txt_auxiliar = txt;
     txt_auxiliar.erase(0,4);
     int i = 4;
     pos_entao = txt_auxiliar.find("entao");
+
+    if (pos_entao<=0) {
+      c+=i;
+      std::cout << l << "; " << c << "\n";
+      return false;
+    }
+
     i+=pos_entao+5;
     txt_auxiliar.erase(0, pos_entao+4);
     tam_escolha = tam_funcao(txt_auxiliar);
@@ -629,12 +731,19 @@ bool listadeComandos_(std::string txt) {
 
   }
 
-  return (comando(txt.substr(0, i-1)) && listadeComandos_(txt.substr(i+1,txt.end()));
+  else if (*it==';'){
+    return (comando(txt.substr(0, i-1)) && listadeComandos_(txt.substr(i+1,txt.end()));
+  }
 
+  else {
+    std::cout << l << "; " << c << "\n";
+    return false;
+  }
 }
 
 bool comando(std::string txt) {
 
+  txt = tira_esp(txt);
 
   if (txt.compare(0,3, "leia")) {
     txt.erase(0,3);
@@ -653,21 +762,31 @@ bool comando(std::string txt) {
   if (tam_tipo>0) {
     return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo, txt.end())));
 
-  } else {
+  } else if (tam_tipo<=0) {
     if (txt.compare(0,4, "caso")) {
       txt.erase(0,4);
+      c+=4;
       pos_entao = txt.find("entao");
-      if (pos_entao>0) {
+      if (pos_entao<0) {
+        std::cout << l << "; " << c << "\n";
+        return false;
+      }
+      else if (pos_entao>=0) {
         // Deriva em caso (expressaoLogica) entao {listadeComandos}
         return (expressaoLogica(txt.substr(1, pos_entao-2)) && listadeComandos(txt.substr(pos_entao+5, txt.end())))
       } else {
+        std::cout << l << "; " << c << "\n";
         return false;
       }
     }
     if (txt.compare(0,12, "escolha caso")) {
       txt.erase(0,12);
+      c+=12;
       pos_entao = txt.find("entao");
-      if (pos_caso_contrario>0) {
+      if (pos_caso_contrario<0){
+        std::cout << l << "; " << c << "\n";
+        return false;
+      } else if (pos_caso_contrario>=0) {
         int tam_conteudo_entao = tam_funcao(txt.substr(pos_entao+5, txt.end()));
 
           // Deriva em escolha caso (expressaoLogica) entao {listadeComandos} <listadeCondicionalCaso>
@@ -679,9 +798,13 @@ bool comando(std::string txt) {
 
     if(txt.compare(0,5, "vetor") == 0) {
       txt.erase(0,5);
+      c+=5;
       int tam_tipo = tam_tipo(txt);
       // Deriva para caso exista um Tipo
-      if (tam_tipo>0) {
+      if (tam_tipo<0) {
+        std::cout << l << "; " << c << "\n";
+        return false;
+      } else if (tam_tipo>0) {
         // Encontra o Identificador
         int j = tam_tipo;
         for(std::string::iterator it=tam_tipo; it!=txt.end() && *it!='['; it++) {
@@ -689,14 +812,24 @@ bool comando(std::string txt) {
         }
 
         //  Deriva em Tipo Identificador;
-        if (j==txt.end()) {
+        if (*it==txt.end()) {
           return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo,txt.end())));
+        } else if (*it!='[') {
+          c+=j;
+          std::cout << l << "; " << c << "\n";
+          return false;
         }
 
         // Encontra o Valor_Inteiro
         int k = j+2;
         for(std::string::iterator it=j+2; it!=txt.end() && *it!=']'; it++) {
           k++;
+        }
+
+        if (*it!=']') {
+          c+=k;
+          std::cout << l << "; " << c << "\n";
+          return false;
         }
         //  Deriva em Tipo Identificador [Valor_Inteiro];
         return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo, j)) && valor_inteiro(txt.substr(j+2, k)));
@@ -704,6 +837,10 @@ bool comando(std::string txt) {
       // Deriva para caso não exista um Tipo
       } else {
         int pos_como = txt.find("como");
+        if (pos_como<0) {
+          std::cout << l << "; " << c << "\n";
+          return false;
+        }
         int j = pos_como+4;
         // Encontra o Identificador
         for(std::string::iterator it=tam_tipo; it!=txt.end() && *it!='['; it++) {
@@ -711,8 +848,13 @@ bool comando(std::string txt) {
         }
 
         //  Deriva em Identificador como Identificador;
-        if (j==txt.end()) {
+        if (*it==txt.end()) {
           return (identificador(txt.substr(0,pos_como-1)) && identificador(txt.substr(pos_como+4,txt.end())));
+        }
+        else if (*it!='[') {
+          c+=j;
+          std::cout << l << "; " << c << "\n";
+          return false;
         }
 
         // Encontra o Valor_Inteiro
@@ -720,12 +862,20 @@ bool comando(std::string txt) {
         for(std::string::iterator it=j+2; it!=txt.end() && *it!=']'; it++) {
           k++;
         }
+
+        if (*it!=']') {
+          c+=k;
+          std::cout << l << "; " << c << "\n";
+          return false;
+        }
+
         //  Deriva em Identificador como Identificador[Valor_Inteiro];
         return (identificador(txt.substr(0,pos_como-1)) && identificador(txt.substr(pos_como+4,j)) && valor_inteiro(txt.substr(j+2, k)));
       }
     }
     if(txt.compare(0,6, "matriz") == 0) {
       txt.erase(0,6);
+      c+=6;
       int tam_tipo = tam_tipo(txt);
       // Deriva para caso exista um Tipo
       if (tam_tipo>0) {
@@ -736,8 +886,13 @@ bool comando(std::string txt) {
         }
 
         //  Deriva em Tipo Identificador;
-        if (j==txt.end()) {
+        if (*it==txt.end()) {
           return (tipo(txt.substr(0,tam_tipo)) && identificador(txt.substr(tam_tipo,txt.end())));
+        }
+        else if (*it!='[') {
+          c+=j;
+          std::cout << l << "; " << c << "\n";
+          return false;
         }
 
         // Encontra o primeiro Valor_Inteiro
@@ -746,10 +901,22 @@ bool comando(std::string txt) {
           k++;
         }
 
+        if (*it!=']') {
+          c+=k;
+          std::cout << l << "; " << c << "\n";
+          return false;
+        }
+
         // Encontra o segundo Valor_Inteiro
         int x = k+3;
         for(std::string::iterator it=k+3; it!=txt.end() && *it!=']'; it++) {
           x++;
+        }
+
+        if (*it!=']') {
+          c+=x;
+          std::cout << l << "; " << c << "\n";
+          return false;
         }
 
         //  Deriva em Tipo Identificador [Valor_Inteiro];
@@ -758,6 +925,10 @@ bool comando(std::string txt) {
       // Deriva para caso não exista um Tipo
       } else {
         int pos_como = txt.find("como");
+        if (pos_como<0) {
+          std::cout << l << "; " << c << "\n";
+          return false;
+        }
         int j = pos_como+4;
         // Encontra o Identificador
         for(std::string::iterator it=tam_tipo; it!=txt.end() && *it!='['; it++) {
@@ -765,8 +936,13 @@ bool comando(std::string txt) {
         }
 
         //  Deriva em Identificador como Identificador;
-        if (j==txt.end()) {
+        if (*it==txt.end()) {
           return (identificador(txt.substr(0,pos_como-1)) && identificador(txt.substr(pos_como+4,txt.end())));
+        }
+        else if (*it!='[') {
+          c+=j;
+          std::cout << l << "; " << c << "\n";
+          return false;
         }
 
         // Encontra o primeiro Valor_Inteiro
@@ -775,10 +951,22 @@ bool comando(std::string txt) {
           k++;
         }
 
+        if (*it!=']') {
+          c+=k;
+          std::cout << l << "; " << c << "\n";
+          return false;
+        }
+
         // Encontra o segundo Valor_Inteiro
         int x = k+3;
         for(std::string::iterator it=k+3; it!=txt.end() && *it!=']'; it++) {
           x++;
+        }
+
+        if (*it!=']') {
+          c+=x;
+          std::cout << l << "; " << c << "\n";
+          return false;
         }
 
         //  Deriva em Identificador como Identificador[Valor_Inteiro][Valor_Inteiro];
@@ -787,11 +975,16 @@ bool comando(std::string txt) {
     }
     if(txt.compare(0,8, "Complexo") == 0) {
       txt.erase(0,8);
+      c+=8;
       int j = 0;
       for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='{'; it++) {
         j++;
       }
-      if (j==txt.end()) {
+      if (*it==txt.end()) {
+        return false;
+      } else if (*it!='{') {
+        c+=j;
+        std::cout << l << "; " << c << "\n";
         return false;
       }
       else{
@@ -800,13 +993,23 @@ bool comando(std::string txt) {
         for(std::string::iterator it=j+2; it!=txt.end() && *it!='}'; it++) {
           k++;
         }
+
+        if (*it!='}') {
+          c+=k;
+          std::cout << l << "; " << c << "\n";
+          return false;
+        }
         //  Deriva em Identificador {listadeDeclaracoes}.
         return (identificador(txt.substr(0,j)) && listadeDeclaracoes(txt.substr(j+2, k)));
       }
     }
     // Procura o primeiro caso "como".
     int pos_como = txt.find("como");
-    if (pos_como>0) {
+    if (pos_como<0) {
+      std::cout << l << "; " << c << "\n";
+      return false;
+    }
+    else if (pos_como>=0) {
       // Deriva no primeiro caso Letra como Identificador.
       return (letra(txt.substr(0, pos_como-1)) && identificador(txt.substr(pos_como+4, txt.end())));
     } else {
@@ -820,80 +1023,96 @@ bool comando(std::string txt) {
         texto = txt.substr(pos_igualdade+2, txt.end()-1);
       }
 
-      // Procura caso de letras [Valor Inteiro].
-      int pos_colchete_1 = txt.find('[');
-      if (pos_colchete_1>0 && pos_igualdade>pos_colchete_1) {
-        int pos_colchete_2 = txt.substr(pos_colchete_1+1, txt.end()).find('[');
+      if (pos_igualdade>=0) {
 
-        // Procura caso de letras [Valor Inteiro][Valor_Inteiro].
-        if (pos_colchete_2>0 && pos_igualdade>pos_colchete_1) {
+        // Procura caso de letras [Valor Inteiro].
+        int pos_colchete_1 = txt.find('[');
+        if (pos_colchete_1>=0 && pos_igualdade>pos_colchete_1) {
+          int pos_colchete_2 = txt.substr(pos_colchete_1+1, txt.end()).find('[');
+
+          // Procura caso de letras [Valor Inteiro][Valor_Inteiro].
+          if (pos_colchete_2>=0 && pos_igualdade>pos_colchete_1) {
+            if (texto.size()>=0) {
+
+
+              // Procura caso de letras [Valor Inteiro][Valor_Inteiro] = "texto".
+              return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-2)) && valorInteiro(txt.substr(pos_colchete_2+1, pos_igualdade-1)) && texto(texto));
+            }
+
+
+            // Procura caso de letras [Valor Inteiro][Valor_Inteiro] = Expressao.
+            return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-2)) && valorInteiro(txt.substr(pos_colchete_2+1, pos_igualdade-1)) && expressao(txt.substr(pos_igualdade+1, txt.end())));
+          }
           if (texto.size()>0) {
 
-
-            // Procura caso de letras [Valor Inteiro][Valor_Inteiro] = "texto".
-            return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-2)) && valorInteiro(txt.substr(pos_colchete_2+1, pos_igualdade-1)) && texto(texto));
+            // Procura caso de letras [Valor Inteiro] = "texto".
+            return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_igualdade-1)) && texto(texto));
           }
 
-
-          // Procura caso de letras [Valor Inteiro][Valor_Inteiro] = Expressao.
-          return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-2)) && valorInteiro(txt.substr(pos_colchete_2+1, pos_igualdade-1)) && expressao(txt.substr(pos_igualdade+1, txt.end())));
+          // Procura caso de letras [Valor Inteiro] = Expressao.
+          return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_igualdade-1)) && expressao(txt.substr(pos_igualdade+1, txt.end())));
         }
-        if (texto.size()>0) {
+        pos_barra = txt.find('/');
+        if (pos_barra>=0 && pos_igualdade>pos_barra) {
 
-          // Procura caso de letras [Valor Inteiro] = "texto".
-          return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_igualdade-1)) && texto(texto));
+          // Deriva em Letras / atribuicao OU Letras / atribuicaodeAtributo.
+          return (letra(txt.substr(0, pos_barra-1)) &&  (atribuicao(txt.substr(pos_barra+1, txt.end())) || atribuicaodeAtributo(txt.substr(pos_barra+1, txt.end()))));
         }
-
-        // Procura caso de letras [Valor Inteiro] = Expressao.
-        return (letra(txt.substr(0, pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_igualdade-1)) && expressao(txt.substr(pos_igualdade+1, txt.end())));
-      }
-      pos_barra = txt.find('/');
-      if (pos_barra>0 && pos_igualdade>pos_barra) {
-
-        // Deriva em Letras / atribuicao OU Letras / atribuicaodeAtributo.
-        return (letra(txt.substr(0, pos_barra-1)) &&  (atribuicao(txt.substr(pos_barra+1, txt.end())) || atribuicaodeAtributo(txt.substr(pos_barra+1, txt.end()))));
-      }
-
-      if (pos_igualdade<0) {
+      } else if (pos_igualdade<0) {
         pos_parenteses = txt.find('(');
-        if (pos_parenteses>0) {
+        if (pos_parenteses>=0) {
 
           // Deriva em Letras (listadeIdentificadores).
           return (letra(txt.substr(0, pos_parenteses-1)) &&   listadeIdentificadores(txt.substr(pos_parenteses+1, txt.end()-1)));
         }
+      } else {
+        c+=j;
+        std::cout << l << "; " << c << "\n";
+        return false;
       }
 
       if (texto.size()>0) {
 
         // Deriva em Letras = "texto".
         return (letra(txt.substr(0, pos_igualdade-1)) && texto(texto));
-      } else {
+      } else if (texto.size()<0){
 
         // Deriva em Letras = expressao OU Letras = chamadadeFuncao.
         return (letra(txt.substr(0, pos_igualdade-1)) && (chamadadeFuncao(txt.substr(pos_igualdade+1, txt.end())) || expressao(txt.substr(pos_igualdade+1, txt.end()))));
+      } else{
+        std::cout << l << "; " << c << "\n";
+        return false;
       }
     }
+  } else {
+    std::cout << l << "; " << c << "\n";
+    return false;
   }
-  return false;
 }
 
 bool chamadadeFuncao(std::string txt) {
+  txt = tira_esp(txt);
   // Pega o identificador.
   if (!std::isalpha(*txt.begin())) {
     return false;
   }
   txt.erase(0,1);
+  c++;
 
   int tam_i = tam_id(txt);
   std::string letras = txt.substr(0, tam_i);
   txt.erase(0, tam_i);
+  c += tam_i;
 
+  txt = tira_esp(txt);
   // Consome "(".
   if(txt[0] != '(') {
     return false;
   }
   txt.erase(0,1);
+  c++;
 
+  txt = tira_esp(txt);
   // Se não é passado parâmetros.
   if(txt[0] == ')') {
     return letra(letras);
@@ -910,11 +1129,14 @@ bool chamadadeFuncao(std::string txt) {
 }
 
 bool declaracaodeEstrutura(std::string txt) {
+  txt = tira_esp(txt);
   // Consome o "complexo".
   if (txt.compare(0,8,"complexo") != 0) {
     return false;
   }
   txt.erase(0,8);
+  c += 8;
+  txt = tira_esp(txt);
 
   // Se existe identificador.
   if (txt[0] == '{') {
@@ -925,12 +1147,16 @@ bool declaracaodeEstrutura(std::string txt) {
   int tam_i = tam_id(txt);
   std::string id = txt.substr(0, tam_i);
   txt.erase(0, tam_i);
+  c += tam_i;
+  txt = tira_esp(txt);
 
   // Consome o '{'.
   if (txt[0] != '{') {
     return false;
   }
   txt.erase(0,1);
+  c++;
+  txt = tira_esp(txt);
 
   // Se não é passado declarações.
   if(txt[0] == '}') {
@@ -948,11 +1174,15 @@ bool declaracaodeEstrutura(std::string txt) {
 }
 
 bool listadeDeclaracoes(std::string txt) {
+  txt = tira_esp(txt);
   if(txt.compare(0,3,"int") == 0) {
     txt.erase(0,3);
+    c += 3;
+    txt = tira_esp(txt);
     if(txt.find(';') != -1) {
       std::string id = txt.substr(0,txt.find(';'));
       txt.erase(0,txt.find(';'));
+      c += txt.find(';');
       if(txt.size()>0) {
         return identificador(id) && listadeDeclaracoes(txt);
       }
@@ -964,8 +1194,12 @@ bool listadeDeclaracoes(std::string txt) {
   }
   if(txt.compare(0,2,"pf") == 0) {
     txt.erase(0,2);
+    c += 2;
+    txt = tira_esp(txt);
     if(txt.find(';') != -1) {
       std::string id = txt.substr(0,txt.find(';'));
+      txt.erase(0,txt.find(';'));
+      c += txt.find(';');
       if(txt.size()>0) {
         return identificador(id) && listadeDeclaracoes(txt);
       }
@@ -977,8 +1211,12 @@ bool listadeDeclaracoes(std::string txt) {
   }
   if(txt.compare(0,6,"logico") == 0) {
     txt.erase(0,6);
+    c += 6;
+    txt = tira_esp(txt);
     if(txt.find(';') != -1) {
       std::string id = txt.substr(0,txt.find(';'));
+      txt.erase(0,txt.find(';'));
+      c += txt.find(';');
       if(txt.size()>0) {
         return identificador(id) && listadeDeclaracoes(txt);
       }
@@ -990,9 +1228,12 @@ bool listadeDeclaracoes(std::string txt) {
   }
   if(txt.compare(0,5,"texto") == 0) {
     txt.erase(0,5);
-
+    c += 5;
+    txt = tira_esp(txt);
     if(txt.find(';') != -1) {
       std::string id = txt.substr(0,txt.find(';'));
+      txt.erase(0,txt.find(';'));
+      c += txt.find(';');
       if(txt.size()>0) {
         return identificador(id) && listadeDeclaracoes(txt);
       }
@@ -1003,6 +1244,9 @@ bool listadeDeclaracoes(std::string txt) {
     return false;
   }
   if(txt.compare(0,5,"vetor") == 0) {
+    txt.erase(0,5);
+    c += 5;
+    txt = tira_esp(txt);
     if(txt.find("[") == -1 || txt.find(";") < txt.find("[")) {
       return false;
     }
@@ -1010,17 +1254,24 @@ bool listadeDeclaracoes(std::string txt) {
     if(txt.find("como") < txt.find("[") && txt.find("como") != -1) {
       std::string id1 = txt.substr(0,txt.find("como"));
       txt.erase(0,id1.size()+4);
+      c += id1.size()+4;
+      txt = tira_esp(txt);
 
       std::string id2 = txt.substr(0,txt.find("["));
       txt.erase(0,id2.size()+1);
+      c += id2.size()+1;
+      txt = tira_esp(txt);
 
       if(txt.find("]") == -1) {
         return false;
       }
       std::string v = txt.substr(0,txt.find("]"));
       txt.erase(0,v.size()+1);
+      c += v.size()+1;
+      txt = tira_esp(txt);
 
       txt.erase(0,1);
+      c++;
       if(txt.size() > 0) {
         return identificador(id1) && identificador(id2) && valorInteiro(v) && listadeDeclaracoes(txt);
       }
@@ -1031,26 +1282,36 @@ bool listadeDeclaracoes(std::string txt) {
     int tam_t = tam_tipo(txt);
     std::string t = txt.substr(0,tam_t);
     txt.erase(0,tam_t);
+    c += tam_t;
+    txt = tira_esp(txt);
 
     if(txt.find("[") == -1 || txt.find(";") < txt.find("[")) {
       return false;
     }
     std::string id = txt.substr(0,txt.find("["));
     txt.erase(0,id.size()+1);
+    c += id.size()+1;
+    txt = tira_esp(txt);
 
     if(txt.find("]") == -1) {
       return false;
     }
     std::string v = txt.substr(0,txt.find("]"));
     txt.erase(0,v.size()+1);
+    c += v.size()+1
+    txt = tira_esp(txt);
 
     txt.erase(0,1);
+    c++;
     if(txt.size() > 0) {
       return tipo(t) && identificador(id) && valorInteiro(v) && listadeDeclaracoes(txt);
     }
     return tipo(t) && identificador(id) && valorInteiro(v);
   }
   if(txt.compare(0,6,"matriz") == 0) {
+    txt.erase(0,6);
+    c += 6;
+    txt = tira_esp(txt);
     if(txt.find("[") == -1 || txt.find(";") < txt.find("[")) {
       return false;
     }
@@ -1058,15 +1319,21 @@ bool listadeDeclaracoes(std::string txt) {
     if(txt.find("como") < txt.find("[") && txt.find("como") != -1) {
       std::string id1 = txt.substr(0,txt.find("como"));
       txt.erase(0,id1.size()+4);
+      c += id1.size()+4;
+      txt = tira_esp(txt);
 
       std::string id2 = txt.substr(0,txt.find("["));
       txt.erase(0,id2.size()+1);
+      c += id2.size()+1;
+      txt = tira_esp(txt);
 
       if(txt.find("]") == -1) {
         return false;
       }
       std::string v1 = txt.substr(0,txt.find("]"));
       txt.erase(0,v1.size()+1);
+      c += v1.size()+1;
+      txt = tira_esp(txt);
 
       if(txt.find("[") == -1 || txt.find(";") < txt.find("[")) {
         return false;
@@ -1074,10 +1341,13 @@ bool listadeDeclaracoes(std::string txt) {
       if(txt.find("]") == -1) {
         return false;
       }
-      std::string v2 = txt.substr(0,txt.find("]"));
+      std::string v2 = txt.substr(1,txt.find("]"));
       txt.erase(0,v2.size()+1);
+      c += v2.size()+2;
+      txt = tira_esp(txt);
 
       txt.erase(0,1);
+      c++;
       if(txt.size() > 0) {
         return identificador(id1) && identificador(id2) && valorInteiro(v1) && valorInteiro(v2) && listadeDeclaracoes(txt);
       }
@@ -1087,18 +1357,24 @@ bool listadeDeclaracoes(std::string txt) {
     int tam_t = tam_tipo(txt);
     std::string t = txt.substr(0,tam_t);
     txt.erase(0,tam_t);
+    c += tam_t;
+    txt = tira_esp(txt);
 
     if(txt.find("[") == -1 || txt.find(";") < txt.find("[")) {
       return false;
     }
     std::string id = txt.substr(0,txt.find("["));
     txt.erase(0,id.size()+1);
+    c += id.size()+1;
+    txt = tira_esp(txt);
 
     if(txt.find("]") == -1) {
       return false;
     }
     std::string v1 = txt.substr(0,txt.find("]"));
     txt.erase(0,v1.size()+1);
+    c += v1.size();
+    txt = tira_esp(txt);
 
     if(txt.find("[") == -1 || txt.find(";") < txt.find("[")) {
       return false;
@@ -1106,10 +1382,13 @@ bool listadeDeclaracoes(std::string txt) {
     if(txt.find("]") == -1) {
       return false;
     }
-    std::string v2 = txt.substr(0,txt.find("]"));
+    std::string v2 = txt.substr(1,txt.find("]"));
     txt.erase(0,v2.size()+1);
+    c += v2.size()+2;
+    txt = tira_esp(txt);
 
     txt.erase(0,1);
+    c++;
     if(txt.size() > 0) {
       return tipo(t) && identificador(id) && valorInteiro(v1) && valorInteiro(v2) && listadeDeclaracoes(txt);
     }
@@ -1120,10 +1399,13 @@ bool listadeDeclaracoes(std::string txt) {
     return false;
   }
   txt.erase(0,1);
+  c++;
 
   int tam_i = tam_id(txt);
   std::string letras = txt.substr(0, tam_i);
   txt.erase(0, tam_i);
+  c += tam_i;
+  txt = tira_esp(txt);
 
   if(txt.find("como") == -1 || (txt.find("como") > txt.find(";")) {
     return false;
@@ -1134,6 +1416,8 @@ bool listadeDeclaracoes(std::string txt) {
   }
   std::string id = txt.substr(0,txt.find(";"));
   txt.erase(0,id.size()+1);
+  c += id.size()+1;
+  txt = tira_esp(txt);
 
   if(txt.size() > 0) {
     return letra(letras) && identificador(id) && listadeDeclaracoes(txt);
@@ -1142,14 +1426,19 @@ bool listadeDeclaracoes(std::string txt) {
 }
 
 bool declaracao(std::string txt) {
+  txt = tira_esp(txt);
   // Consome o tipo.
   if (txt.compare(0,5,"vetor") == 0) {
     txt.erase(0,5);
+    c += 5;
+    txt = tira_esp(txt);
 
     // Pega tipo.
     int tam_t = tam_tipo(txt);
     std::string t = txt.substr(0,tam_t);
     txt.erase(0,tam_t);
+    c += tam_t;
+    txt = tira_esp(txt);
 
     // Pega identificador.
     std::string id;
@@ -1157,23 +1446,30 @@ bool declaracao(std::string txt) {
       return false;
     }
     id = txt.substr(0,txt.find('['));
-    txt.erase(0,id.size());
+    txt.erase(0,id.size()+1);
+    c += id.size()+1;
+    txt = tira_esp(txt);
 
     // Pega o valor inteiro.
     std::string v;
-    if (*txt.end() == ';' && *(txt.end()-1) == ']') {
-      v = txt.substr(txt.begin()+1,txt.end()-2);
+    if (txt.find(']') != -1 && txt.find(';') > txt.find(']')) {
+      v = txt.substr(0,txt.find(']'));
+      c += v.size()+1;
       return tipo(t) && identificador(id) && valorInteiro(v);
     }
     return false;
   }
   if (txt.compare(0,6,"matriz") == 0) {
     txt.erase(0,6);
+    c += 6;
+    txt = tira_esp(txt);
 
     // Pega tipo.
     int tam_t = tam_tipo(txt);
     std::string t = txt.substr(0,tam_t);
     txt.erase(0,tam_t);
+    c += tam_t;
+    txt = tira_esp(txt);
 
     // Pega identificador.
     std::string id;
@@ -1182,7 +1478,8 @@ bool declaracao(std::string txt) {
     }
     id = txt.substr(0,txt.find('['));
     txt.erase(0,id.size());
-    txt.erase(0,1);
+    c += id.size()+1;
+    txt = tira_esp(txt);
 
     // Pega o primeiro valor inteiro.
     std::string v1;
@@ -1190,18 +1487,24 @@ bool declaracao(std::string txt) {
       return false;
     }
     v1 = txt.substr(0,txt.find(']'));
-    txt.erase(0,v1.size());
+    txt.erase(0,v1.size()+1);
+    c += v1.size()+1;
+    txt = tira_esp(txt);
 
     // Pega o segundo valor inteiro.
     std::string v2;
-    if (*txt.end() == ';' && *(txt.end()-1) == ']') {
-      v2 = txt.substr(txt.begin()+1,txt.end()-2);
+    if (txt.find(']') != -1 && txt.find(';') > txt.find(']')) {
+      v2 = txt.substr(0,txt.find(']'));
+      c += v2.size()+1;
       return tipo(t) && identificador(id) && valorInteiro(v1) && valorInteiro(v2);
     }
     return false;
   }
   if (txt.compare(0,3,"int") == 0) {
     txt.erase(0,3);
+    c += 3;
+    txt = tira_esp(txt);
+
 
     // Pega o identificador.
     std::string id;
@@ -1213,7 +1516,8 @@ bool declaracao(std::string txt) {
   }
   if (txt.compare(0,2,"pf") == 0) {
     txt.erase(0,2);
-
+    c += 2;
+    txt = tira_esp(txt);
     // Pega o identificador.
     std::string id;
     if (*txt.end() == ";") {
@@ -1224,7 +1528,8 @@ bool declaracao(std::string txt) {
   }
   if (txt.compare(0,6,"logico") == 0) {
     txt.erase(0,6);
-
+    c += 6;
+    txt = tira_esp(txt);
     // Pega o identificador.
     std::string id;
     if (*txt.end() == ";") {
@@ -1235,7 +1540,8 @@ bool declaracao(std::string txt) {
   }
   if (txt.compare(0,5,"texto") == 0) {
     txt.erase(0,5);
-
+    c += 5;
+    txt = tira_esp(txt);
     // Pega o identificador.
     std::string id;
     if (*txt.end() == ";") {
@@ -1248,7 +1554,7 @@ bool declaracao(std::string txt) {
 }
 
 bool atribuicao(std::string txt) {
-
+  txt = tira_esp(txt);
   // Procura a igualdade no segundo caso.
   int pos_igualdade = txt.find('=');
   std::string texto = '';
@@ -1257,13 +1563,13 @@ bool atribuicao(std::string txt) {
   if (txt[pos_igualdade+1] == '"') {
     texto = txt.substr(pos_igualdade+2, txt.end()-1);
   }
-  if (pos_igualdade>0) {
+  if (pos_igualdade>=0) {
     int pos_colchete_1 = txt.find('[');
-    if (pos_colchete_1>0 && pos_igualdade>pos_colchete_1) {
+    if (pos_colchete_1>=0 && pos_igualdade>pos_colchete_1) {
       int pos_colchete_2 = txt.substr(pos_colchete_1+1, txt.end()).find('[');
 
       // Procura caso de letras [Valor Inteiro][Valor_Inteiro].
-      if (pos_colchete_2>0 && pos_igualdade>pos_colchete_1) {
+      if (pos_colchete_2>=0 && pos_igualdade>pos_colchete_1) {
         if (texto.size()>0) {
 
 
@@ -1289,32 +1595,46 @@ bool atribuicao(std::string txt) {
 
       // Deriva em Letras = "texto".
       return (letra(txt.substr(0, pos_igualdade-1)) && texto(texto));
-    } else {
+    } else if (texto.size()<=0){
 
       // Deriva em Letras = expressao OU Letras = chamadadeFuncao.
       return (letra(txt.substr(0, pos_igualdade-1)) && (chamadadeFuncao(txt.substr(pos_igualdade+1, txt.end())) || expressao(txt.substr(pos_igualdade+1, txt.end()))));
+    } else {
+      std::cout << l << "; " << c << "\n";
+      return false;
     }
   }
+  std::cout << l << "; " << c << "\n";
   return false;
 }
 
 bool atribuicaodeEstrututra(std::string txt) {
+  txt = tira_esp(txt);
   if(txt.compare(0,6,"matriz") == 0) {
+    txt.erase(0,6);
+    c+=6;
+    txt = tira_esp(txt);
     if(txt.find("[") == -1) {
       return false;
     }
     if(txt.find("como") < txt.find("[") && txt.find("como") != -1) {
       std::string id1 = txt.substr(0,txt.find("como"));
       txt.erase(0,id1.size()+4);
+      c+=id1.size()+4;
+      txt = tira_esp(txt);
 
       std::string id2 = txt.substr(0,txt.find("["));
       txt.erase(0,id2.size()+1);
+      c+=id2.size()+1;
+      txt = tira_esp(txt);
 
       if(txt.find("]") == -1) {
         return false;
       }
       std::string v1 = txt.substr(0,txt.find("]"));
       txt.erase(0,v1.size()+1);
+      c+=v1.size()+1;
+      txt = tira_esp(txt);
 
       if(txt.find("[") == -1) {
         return false;
@@ -1324,36 +1644,48 @@ bool atribuicaodeEstrututra(std::string txt) {
       }
       std::string v2 = txt.substr(0,txt.find("]"));
       txt.erase(0,v2.size()+1);
+      c+= v2.size()+1;
 
       if(txt.find(";") == -1) {
         return false;
       }
       txt.erase(0,1);
+      c++;
       return identificador(id1) && identificador(id2) && valorInteiro(v1) && valorInteiro(v2);
     }
     return false;
   }
   if(txt.compare(0,5,"vetor") == 0) {
+    txt.erase(0,5);
+    c += 5;
+    txt = tira_esp(txt);
     if(txt.find("[") == -1) {
       return false;
     }
     if(txt.find("como") < txt.find("[") && txt.find("como") != -1) {
       std::string id1 = txt.substr(0,txt.find("como"));
       txt.erase(0,id1.size()+4);
+      c+=id1.size()+4;
+      txt = tira_esp(txt);
 
       std::string id2 = txt.substr(0,txt.find("["));
       txt.erase(0,id2.size()+1);
+      c+=id2.size()+1;
+      txt = tira_esp(txt);
 
       if(txt.find("]") == -1) {
         return false;
       }
       std::string v = txt.substr(0,txt.find("]"));
       txt.erase(0,v.size()+1);
+      c+=v.size()+1;
+      txt = tira_esp(txt);
 
       if(txt.find(";") == -1) {
         return false;
       }
       txt.erase(0,1);
+      c++;
       return identificador(id1) && identificador(id2) && valorInteiro(v);
     }
     return false;
@@ -1362,10 +1694,14 @@ bool atribuicaodeEstrututra(std::string txt) {
     return false;
   }
   txt.erase(0,1);
+  c+=1;
+  txt = tira_esp(txt);
 
   int tam_i = tam_id(txt);
   std::string letras = txt.substr(0, tam_i);
   txt.erase(0, tam_i);
+  c+=tam_i;
+  txt = tira_esp(txt);
 
   if(txt.find("como") == -1 || (txt.find("como") > txt.find(";")) {
     return false;
@@ -1374,8 +1710,13 @@ bool atribuicaodeEstrututra(std::string txt) {
   if(txt.find(";") == -1) {
     return false;
   }
+  txt.erase(0,4);
+  c+=4;
+  txt = tira_esp(txt);
+
   std::string id = txt.substr(0,txt.find(";"));
   txt.erase(0,id.size()+1);
+  c+=id.size()+1;
 
   return letra(letras) && identificador(id);
 }
@@ -1385,10 +1726,15 @@ bool atribuicaodeAtributo(std::string txt) {
 }
 
 bool listadeCondicionalCaso(std::string txt) {
+  txt = tira_esp(txt);
   if (txt.compare(0,4, "caso")) {
     txt.erase(0,4);
+    c+=4;
     pos_entao = txt.find("entao");
-    if (pos_entao>0) {
+    if (pos_entao<0) {
+      std::cout << l << "; " << c << "\n";
+      return false;
+    } else if (pos_entao>=0) {
       int tam_entao = tam_funcao(txt.substr(pos_entao+4, txt.end()));
 
       // Deriva em caso (expressaoLogica) entao {listadeComandos} listadeCondicionalCaso
@@ -1398,8 +1744,10 @@ bool listadeCondicionalCaso(std::string txt) {
     }
   } else if (txt.compare(0, 14, "caso contrario")) {
     txt.erase(0,14);
+    c+=14;
     return (listadeComandos_(txt.begin()+1, txt.end()-1));
   }
+  std::cout << l << "; " << c << "\n";
   return false;
 }
 
@@ -1411,41 +1759,56 @@ bool tipo(std::string txt) {
   if (txt == "int" || txt == "pf" || txt == "logico" || txt == "texto") {
     return true;
   }
+  std::cout << l << "; " << c << "\n";
   return false;
 }
 
 bool expressao(std::string txt) {
+  txt = tira_esp(txt);
   if (txt.compare(0,1, '-')) {
     txt.erase(0,1);
+    c++;
     if (std::isalpha(*txt.begin()) || txt.compare(0,1, '(')) {
       // Deriva em - Expressao Aritmetica OU - Expressao Logica
       return (expressaoAritmetica(txt) || expressaoLogica(txt));
+    } else {
+      std::cout << l << "; " << c << "\n";
+      return false;
     }
   }
-  if (txt.compare(0,1, '(')) {
+  else if (txt.compare(0,1, '(')) {
     txt.erase(0,1);
+    c++;
     int tam_parenteses = 0;
     for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!=')'; it++) {
       tam_parenteses++;
     }
+
+    if (*it!=')') {
+      std::cout << l << "; " << c << "\n";
+      return false;
+    }
     // Deriva em (Expressão Aritmetica) Expressao Aritmetica OU (Expressão Aritmetica) Expressao logica OU (Expressão Logica) Expressao Logica
     return ((expressaoAritmetica(txt.substr(txt.begin(), j)) && (expressaoAritmetica(txt.substr(j+2, txt.end())) || expressaoLogica(txt.substr(j+2, txt.end())))) || (expressaoLogica(txt.substr(txt.begin(), j)) && expressaoLogica(txt.substr(j+2, txt.end()))));
   }
-  if (txt.compare(0,10, "Verdadeiro")) {
+  else if (txt.compare(0,10, "Verdadeiro")) {
     txt.erase(0,10);
+    c+=10;
     // Deriva em Verdadeiro Expressao Logica
     return (expressaoLogica(txt));
   }
-  if (txt.comparre(0,5, "Falso")) {
+  else if (txt.compare(0,5, "Falso")) {
     txt.erase(0,5);
+    c+=5;
     // Deriva em Falso Expressao logica
     return (expressaoLogica(txt));
   }
-  if (std::isalpha(*txt.begin())) {
+  else if (std::isalpha(*txt.begin())) {
     int pos_expressao = 0;
     for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
       pos_expressao++;
     }
+    c+=pos_expressao;
     if (it!=txt.end()) {
       // Deriva em <letras> <expressaoAritmetica> OU <letras> <expressaoLogica>
       return (letra(txt.substr(txt.begin(), pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
@@ -1453,95 +1816,131 @@ bool expressao(std::string txt) {
 
     int pos_colchete_1 = txt.find('[');
     int pos_colchete_2 = txt.find(']');
+    if (pos_colchete_1<0 && pos_colchete_2<0) {
+      std::cout << l << "; " << c << "\n";
+      return false;
+    }
     int pos_colchete_3 = txt.substr(pos_colchete_2, txt.end()).find('[');
     int pos_colchete_4 = txt.substr(pos_colchete_2, txt.end()).find(']');
-    if (pos_colchete_1>0) {
-      if (pos_colchete_3>0) {
-        // Deriva em <Letras> [Valor Inteiro][Valor Inteiro] <expressaoAritmetica> OU <Letras> [Valor Inteiro][Valor Inteiro] <expressaoLogica>
-        return (letra(txt.substr(txt.begin(), pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-1)) && valorInteiro(txt.substr(pos_colchete_2+pos_colchete_3+1, pos_colchete_2+pos_colchete_4-1)) && (expressaoAritmetica(txt.substr(pos_colchete_2+pos_colchete_4+1, txt.end())) || expressaoLogica(txt.substr(pos_colchete_2+pos_colchete_4+1, txt.end()))));
+    if (pos_colchete_3>=0) {
+      if (pos_colchete_4<0) {
+        std::cout << l << "; " << c << "\n";
+        return false;
       }
+      // Deriva em <Letras> [Valor Inteiro][Valor Inteiro] <expressaoAritmetica> OU <Letras> [Valor Inteiro][Valor Inteiro] <expressaoLogica>
+      return (letra(txt.substr(txt.begin(), pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-1)) && valorInteiro(txt.substr(pos_colchete_2+pos_colchete_3+1, pos_colchete_2+pos_colchete_4-1)) && (expressaoAritmetica(txt.substr(pos_colchete_2+pos_colchete_4+1, txt.end())) || expressaoLogica(txt.substr(pos_colchete_2+pos_colchete_4+1, txt.end()))));
+    } else {
       // Deriva em <Letras> [Valor Inteiro] <expressaoAritmetica> OU <Letras> [Valor Inteiro][Valor Inteiro] <expressaoLogica>
       return (letra(txt.substr(txt.begin(), pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-1)) && (expressaoAritmetica(txt.substr(pos_colchete_2+pos_colchete_4+1, txt.end())) || expressaoLogica(txt.substr(pos_colchete_2+pos_colchete_4+1, txt.end()))));
     }
     return (letra(txt.substr(txt.begin(), pos_expressao));
 
   }
-
-  if (txt.compare(0,1, '!')) {
+  else if (txt.compare(0,1, '!')) {
     txt.erase(0,1);
+    c++;
     return  expressaoLogica(txt);
   }
-  std::string inteiros[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-  if (txt.compare(0,1, '-')) {
+  else if (txt.compare(0,1, '-')) {
+    std::string inteiros[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     txt.erase(0,1);
+    c++;
     bool inteiro = false;
     for (size_t i = 0; i < 10; i++) {
-      if ((txt.substr(0,1)).find(tipos[i]) > 0) {
+      if ((txt.substr(0,1)).find(inteiros[i]) > 0) {
         inteiro = true;
         break;
       }
     }
     if (inteiro) {
       int pos_ponto = txt.find('.');
-      if (pos_ponto>0) {
+      if (pos_ponto>=0) {
         int pos_expressao = 0;
         for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
           pos_expressao++;
         }
-        if (it!=txt.end()) {
+        if (*it!=txt.end()) {
           // Deriva em - Valor . Valor <expressaoAritmetica> OU - Valor . Valor <expressaoLogica>
           return (valor(txt.substr(txt.begin(), pos_ponto)) && valor(txt.substr(pos_ponto+2, pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
+        } else if (*it==txt.end()){
+          c+=pos_expressao;
+          std::cout << l << "; " << c << "\n";
+          return false;
         }
 
         // Deriva em - Valor . Valor
         return (valor(txt.substr(txt.begin(), pos_ponto)) && valor(txt.substr(pos_ponto+2, pos_expressao)));
+      } else if (pos_expressao<0) {
+        int pos_expressao = 0;
+        for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
+          pos_expressao++;
+        }
+        if (*it!=txt.end()) {
+          // Deriva em - Valor . Valor <expressaoAritmetica> OU - Valor . Valor <expressaoLogica>
+          return (valor(txt.substr(txt.begin(), pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
+        } else if (*it==txt.end()){
+          // Deriva em - Valor
+          return (valor(txt.substr(txt.begin(), pos_expressao));
+        } else {
+          c+=pos_expressao;
+          std::cout << l << "; " << c << "\n";
+          return false;
+        }
+      } else {
+        std::cout << l << "; " << c << "\n";
+        return false;
       }
-      int pos_expressao = 0;
-      for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
-        pos_expressao++;
-      }
-      if (it!=txt.end()) {
-        // Deriva em - Valor . Valor <expressaoAritmetica> OU - Valor . Valor <expressaoLogica>
-        return (valor(txt.substr(txt.begin(), pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
-      }
-
-      // Deriva em - Valor
-      return (valor(txt.substr(txt.begin(), pos_expressao));
     }
+
   } else {
+
+    std::string inteiros[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     bool inteiro = false;
     for (size_t i = 0; i < 10; i++) {
-      if ((txt.substr(0,1)).find(tipos[i]) > 0) {
+      if ((txt.substr(0,1)).find(inteiros[i]) > 0) {
         inteiro = true;
         break;
       }
     }
     if (inteiro) {
       int pos_ponto = txt.find('.');
-      if (pos_ponto>0) {
+      if (pos_ponto>=0) {
+        int pos_expressao = 0;
+        for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
+          pos_expressao++;
+        }
+        if (*it!=txt.end()) {
+          // Deriva em  Valor . Valor <expressaoAritmetica> OU  Valor . Valor <expressaoLogica>
+          return (valor(txt.substr(txt.begin(), pos_ponto)) && valor(txt.substr(pos_ponto+2, pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
+        } else if (*it==txt.end()){
+          c+=pos_expressao;
+          std::cout << l << "; " << c << "\n";
+          return false;
+        }
+
+        // Deriva em Valor . Valor
+        return (valor(txt.substr(txt.begin(), pos_ponto)) && valor(txt.substr(pos_ponto+2, pos_expressao)));
+      } else if (pos_ponto<0) {
         int pos_expressao = 0;
         for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
           pos_expressao++;
         }
         if (it!=txt.end()) {
-          // Deriva em  Valor . Valor <expressaoAritmetica> OU  Valor . Valor <expressaoLogica>
-          return (valor(txt.substr(txt.begin(), pos_ponto)) && valor(txt.substr(pos_ponto+2, pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
+          // Deriva em Valor <expressaoAritmetica> OU  Valor <expressaoLogica>
+          return (valor(txt.substr(txt.begin(), pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
+        } else if (*it==txt.end()){
+          // Deriva em Valor
+          return (valor(txt.substr(txt.begin(), pos_expressao));
+        } else {
+          c+=pos_expressao;
+          std::cout << l << "; " << c << "\n";
+          return false;
         }
-
-        // Deriva em Valor . Valor
-        return (valor(txt.substr(txt.begin(), pos_ponto)) && valor(txt.substr(pos_ponto+2, pos_expressao)));
-      }
-      int pos_expressao = 0;
-      for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
-        pos_expressao++;
-      }
-      if (it!=txt.end()) {
-        // Deriva em Valor <expressaoAritmetica> OU  Valor <expressaoLogica>
-        return (valor(txt.substr(txt.begin(), pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
+      } else {
+        std::cout << l << "; " << c << "\n";
+        return false;
       }
 
-      // Deriva em Valor
-      return (valor(txt.substr(txt.begin(), pos_expressao));
     }
   }
   return false;
@@ -1549,16 +1948,21 @@ bool expressao(std::string txt) {
 }
 
 bool expressaoLogica(std::string txt) {
+  txt = tira_esp(txt);
   if (txt.size()<2) {
-    return true;
+    return false;
   }
   if (txt.compare(0,2, "**") || txt.compare(0,2, "++") || txt.compare(0,2, "==") || txt.compare(0,2, "!=") || txt.compare(0,2, "<=") || txt.compare(0,2, ">=")) {
     txt.erase(0,2);
+    c+=2;
     return expressao(txt);
-  }
-  if (txt.compare(0,1, "<") || txt.compare(0,1, ">")) {
+  } else if (txt.compare(0,1, "<") || txt.compare(0,1, ">")) {
     txt.erase(0,1);
+    c++;
     return expressao(txt);
+  } else {
+    std::cout << l << "; " << c << "\n";
+    return false;
   }
   return false;
 }
@@ -1569,11 +1973,15 @@ bool expressaoLogica_(std::string txt) {
 
 bool expressaoAritmetica(std::string txt) {
   if (txt.size()<2) {
-    return true;
+    return false;
   }
   if (txt.compare(0,1, "*") || txt.compare(0,1, "/") || txt.compare(0,1, "%") || txt.compare(0,1, "+") || txt.compare(0,1, "-")) {
     txt.erase(0,1);
+    c++;
     return expressao(txt);
+  } else {
+    std::cout << l << "; " << c << "\n";
+    return false;
   }
   return false;
 }
@@ -1583,28 +1991,33 @@ bool expressaoAritmetica_(std::string txt) {
 }
 
 bool valorReal(std::string txt) {
-
+  txt = tira_esp(txt);
   if(*txt.begin() == '0') {
     txt.erase(0,1);
-
+    c++;
     if(*txt.begin() == '.') {
       txt.erase(0,1);
+      c++;
       return valor(txt);
     }
+    std::cout << l << "; " << c << "\n";
     return false;
   }
 
   else {
     if (!std::isdigit(*txt.begin())) {
+      std::cout << l << "; " << c << "\n";
       return false;
     }
     txt.erase(0,1);
-
+    c++;
     if (txt.find('.') == -1) {
+      std::cout << l << "; " << c << "\n";
       return false;
     }
     if (txt.find('.') == 0 && *txt.end() != '.') {
       txt.erase(0,1);
+      c++
       return valor(txt);
     }
     if(*txt.end() != '.') {
@@ -1612,41 +2025,42 @@ bool valorReal(std::string txt) {
       std::string v2 == txt.substr(txt.find('.')+1);
       return valor(v1) && valor(v2);
     }
+    std::cout << l << "; " << c << "\n";
     return false;
   }
 }
 
 bool valorInteiro(std::string txt) {
-  if(txt.size() == 1) {
-    if(*txt.begin() == '0') {
-      return true;
-    }
-    else {
-      return false;
-    }
-  }
+  txt = tira_esp(txt);
   if(*txt.begin() == '-'){
     txt.erase(0,1);
+    c++;
   }
   if(std::isdigit(*txt.begin()) && *txt.begin() != '0') {
     txt.erase(0,1);
+    c++;
     return valor(txt);
   }
   else {
+    std::cout << l << "; " << c << "\n";
     return false;
   }
 }
 
 bool valor(std::string txt) {
+  txt = tira_esp(txt);
   if(txt.size() > 1) {
     if(!std::isdigit(*txt.begin())) {
+      std::cout << l << "; " << c << "\n";
       return false
     }
     txt.erase(0,1);
+    c++;
     return valor(txt);
   }
   else {
     if(!std::isdigit(*txt.begin())) {
+      std::cout << l << "; " << c << "\n";
       return false
     }
     return true;
@@ -1654,38 +2068,47 @@ bool valor(std::string txt) {
 }
 
 bool texto(std::string txt) {
+  txt = tira_esp(txt);
   if(txt.size() == 1) {
     if(*txt.begin() == '\0') {
       return true;
     }
     else {
+      std::cout << l << "; " << c << "\n";
       return false;
     }
   }
   if(std::isalnum(*txt.begin())) {
     txt.erase(0,1);
+    c++;
     return texto(txt);
   }
   std::string sym[] = {"_", "|", ",", ".", "<", ">", ":", "/", "?", "]", "[", "=", "+", "-", "*", "!", "@", "#", "%", " ", "\n"};
   for(int i = 0; i < 21; i++) {
     if(*txt.begin() == sym[i]) {
       txt.erase(0,1);
+      c++;
       return texto(txt);
     }
   }
+  std::cout << l << "; " << c << "\n";
   return false;
 }
 
 bool letra(std::string txt) {
+  txt = tira_esp(txt);
   if (txt.size() > 1) {
     if (!std::isalpha(*txt.begin())) {
+      std::cout << l << "; " << c << "\n";
       return false;
     }
     txt.erase(0,1);
+    c++;
     return letra(txt);
   }
   else {
     if (!std::isalpha(*txt.begin())) {
+      std::cout << l << "; " << c << "\n";
       return false;
     }
     return true;
@@ -1693,9 +2116,11 @@ bool letra(std::string txt) {
 }
 
 bool identificador(std::string txt) {
+  txt = tira_esp(txt);
   std::locale loc;
   for(std::string::iterator it=txt.begin(); it!=txt.end(); it++) {
     if (!std::isalpha(*it,loc)) {
+      std::cout << l << "; " << c << "\n";
       return false;
     }
   }
