@@ -1,6 +1,7 @@
 #include <string>
 #include <iostream>
 #include <iterator>
+#include <list>
 
 /* =================== Declaração das Funções =================== */
 
@@ -168,6 +169,54 @@ int tam_id(std::string txt) {
   }
   return i;
 }
+
+/* ================ Estado do programa ================ */
+
+std::list<std::string> funcoes;
+int num_var;
+std::list<std::string> variaveis;
+
+class Estado {
+private:
+  std::string nomeatual;
+  std::list<std::string> pilhafuncoes;
+  std::list<std::string> pilhaparametros;
+  std::string variavelatual;
+  std::string saida;
+public:
+  std::string getnomeatual() {
+
+  }
+  bool pushfuncao(std::string txt) {
+
+  }
+  bool pushparametros(std::string txt) {
+
+  }
+  std::string getvariavelatual() {
+
+  }
+  std::string getsaida() {
+
+  }
+  bool setnomeatual(std::string txt) {
+
+  }
+  bool setvariavelatual(std::string txt) {
+
+  }
+  bool addsaida(std::string txt) {
+
+  }
+  std::string popfuncoes() {
+
+  }
+  std::string popparametros() {
+
+  }
+};
+
+Estado estadodocomp;
 
 /* =================== Reconhecedor =================== */
 
