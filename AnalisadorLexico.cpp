@@ -1695,7 +1695,7 @@ bool atribuicaodeEstrututra(std::string txt) {
       txt.erase(0,v2.size()+1);
       c+= v2.size()+1;
 
-      if(txt.find(";") == -1) {
+      if(txt.find(';') == -1) {
         return false;
       }
       txt.erase(0,1);
@@ -1771,7 +1771,78 @@ bool atribuicaodeEstrututra(std::string txt) {
 }
 
 bool atribuicaodeAtributo(std::string txt) {
-
+  txt = tira_esp(txt);
+  if(isalpha(txt[0])) {
+    txt.erase(0,1);
+    c++;
+    std::string id;
+    while(isalpha(txt[0])) {
+      id += txt[0];
+      txt.erase(0,1);
+      c++;
+    }
+    txt = tira_esp(txt);
+    if(txt[0] == '/') {
+      txt.erase(0,1);
+      c++;
+      txt = tira_esp(txt);
+      return identificador(id) && atribuicao(txt.substr(txt.begin(),txt.end()-1));
+    } else {
+      if(txt[0] == '[') {
+        txt.erase(0,1);
+        c++;
+        txt = tira_esp(txt);
+        std::string v1;
+        while(txt[0]!=']') {
+          v1+=txt[0];
+          txt.erase(0,1);
+          c++;
+        }
+        txt.erase(0,1);
+        c++;
+        txt = tira_esp(txt);
+        if(txt[0] == '[') {
+          txt.erase(0,1);
+          c++;
+          txt = tira_esp(txt);
+          std::string v2;
+          while(txt[0]!=']') {
+            v2+=txt[0];
+            txt.erase(0,1);
+            c++;
+          }
+          txt.erase(0,1);
+          c++;
+          txt = tira_esp(txt);
+          if(txt[0] == '/') {
+            txt.erase(0,1);
+            c++;
+            txt = tira_esp(txt);
+            return identificador(id) && valorInteiro(v1) && valorInteiro(v2) && atribuicao(txt.substr(txt.begin(),txt.end()-1));
+          } else {
+            std::cout << l << "; " << c << "\n";
+            return false;
+          }
+        } else {
+          if(txt[0] == '/') {
+            txt.erase(0,1);
+            c++;
+            txt = tira_esp(txt);
+            return identificador(id) && valorInteiro(v1) && atribuicao(txt.substr(txt.begin(),txt.end()-1));
+          } else {
+            std::cout << l << "; " << c << "\n";
+            return false;
+          }
+        }
+      } else {
+        std::cout << l << "; " << c << "\n";
+        return false;
+      }
+    }
+  } else {
+    std::cout << l << "; " << c << "\n";
+    return false;
+  }
 }
 
 bool listadeCondicionalCaso(std::string txt) {
@@ -1801,7 +1872,72 @@ bool listadeCondicionalCaso(std::string txt) {
 }
 
 bool listadeIdentificadores(std::string txt) {
-
+  txt = tira_esp(txt);
+  if(isalpha(txt[0])) {
+    txt.erase(0,1);
+    c++;
+    std::string id;
+    while(isalpha(txt[0])) {
+      id += txt[0];
+      txt.erase(0,1);
+      c++;
+    }
+    txt = tira_esp(txt);
+    if(txt[0] == ',') {
+      txt.erase(0,1);
+      c++;
+      txt = tira_esp(txt);
+      return identificador(id) && listadeIdentificadores(txt);
+    } else {
+      if(txt[0] == '[') {
+        txt.erase(0,1);
+        c++;
+        txt = tira_esp(txt);
+        std::string v1;
+        while(txt[0]!=']') {
+          v1+=txt[0];
+          txt.erase(0,1);
+          c++;
+        }
+        txt.erase(0,1);
+        c++;
+        txt = tira_esp(txt);
+        if(txt[0] == '[') {
+          txt.erase(0,1);
+          c++;
+          txt = tira_esp(txt);
+          std::string v2;
+          while(txt[0]!=']') {
+            v2+=txt[0];
+            txt.erase(0,1);
+            c++;
+          }
+          txt.erase(0,1);
+          c++;
+          txt = tira_esp(txt);
+          if(txt[0] == ',') {
+            txt.erase(0,1);
+            c++;
+            txt = tira_esp(txt);
+            return identificador(id) && valorInteiro(v1) && valorInteiro(v2) && listadeIdentificadores(txt);
+          } else {
+            return identificador(id) && valorInteiro(v1) && valorInteiro(v2);
+          }
+        } else {
+          if(txt[0] == ',') {
+            txt.erase(0,1);
+            c++;
+            txt = tira_esp(txt);
+            return identificador(id) && valorInteiro(v1) && listadeIdentificadores(txt);
+          } else {
+            return identificador(id) && valorInteiro(v1);
+          }
+        }
+      } else {
+        return identificador(id);
+      }
+    }
+  }
 }
 
 bool tipo(std::string txt) {
