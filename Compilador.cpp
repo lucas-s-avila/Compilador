@@ -188,41 +188,35 @@ int tam_id(std::string txt) {
 
 /* ================ Estado do programa ================ */
 
-std::list<std::string> funcoes;
-int num_var;
-std::list<std::string> variaveis;
+
 
 class Estado {
-private:
-  std::string nomeatual;
-  std::list<std::string> pilhafuncoes;
-  std::list<std::string> pilhaparametros;
-  std::string variavelatual;
 public:
+  std::string funcaoatual;
+  std::list<std::string> parametros;
+  std::string variavelatual;
   std::string saida;
-  std::string getnomeatual() {
+  std::list<std::string> funcoes;
+  int num_var;
+  std::list<std::string> variaveis;
 
-  }
-  bool pushfuncao(std::string txt) {
-
-  }
-  bool pushparametros(std::string txt) {
-
-  }
-  std::string getvariavelatual() {
-
-  }
-  bool setnomeatual(std::string txt) {
-
-  }
-  bool setvariavelatual(std::string txt) {
-
-  }
-  std::string popfuncoes() {
-
-  }
-  std::string popparametros() {
-
+  bool setfunc(std::string nome) {
+    if(nome == "main") {
+      funcaoatual = nome;
+      return true;
+    }
+    int aux = 0;
+    for(std::list<std::string>::iterator it = funcoes.begin(); it != funcoes.end(); it++) {
+      if(nome == *it) {
+        aux = 1;
+      }
+    }
+    if(aux == 0) {
+      funcaoatual = nome;
+      return true;
+    } else {
+      return false;
+    }
   }
 };
 
@@ -238,7 +232,8 @@ bool programa(std::string txt_original) {
   if(txt.compare(0,9,"principal") == 0) {
     txt.erase(0,9);
     c += 9;
-    estadodocomp.saida += "\n int main() { \n\n }xfrfrfd";
+    estadodocomp.saida += "\n int main() { \n\n }";
+    estadodocomp.setfunc("main");
     // Pega a lista de comandos.
     txt = tira_esp(txt);
     int tam_programa = tam_funcao(txt);
@@ -270,7 +265,7 @@ bool listadeFuncoes(std::string txt_original) {
     txt.erase(0,3);
     txt = tira_esp(txt);
     txt_saida += "\nint ";
-
+    estadodocomp.saida.insert(37,txt_saida);
     return funcaoretorno(txt);
   }
   if(txt.compare(0,2, "pf") == 0) {
@@ -278,7 +273,7 @@ bool listadeFuncoes(std::string txt_original) {
     txt.erase(0,2);
     txt = tira_esp(txt);
     txt_saida += "\nfloat ";
-
+    estadodocomp.saida.insert(37,txt_saida);
     return funcaoretorno(txt);
   }
   if(txt.compare(0,6, "logico") == 0) {
@@ -286,7 +281,7 @@ bool listadeFuncoes(std::string txt_original) {
     txt.erase(0,6);
     txt = tira_esp(txt);
     txt_saida += "\nbool";
-
+    estadodocomp.saida.insert(37,txt_saida);
     return funcaoretorno(txt);
   }
   if(txt.compare(0,5, "texto") == 0) {
@@ -294,7 +289,7 @@ bool listadeFuncoes(std::string txt_original) {
     txt.erase(0,5);
     txt = tira_esp(txt);
     txt_saida += "\nstd::string ";
-
+    estadodocomp.saida.insert(37,txt_saida);
     return funcaoretorno(txt);
   }
   if(txt.compare(0,5, "vetor") == 0) {
@@ -322,7 +317,7 @@ bool listadeFuncoes(std::string txt_original) {
         }
       }
     }
-
+    estadodocomp.saida.insert(37,txt_saida);
     return tipo(t) && funcaoretorno(txt);
   }
   if(txt.compare(0,6, "matriz") == 0) {
@@ -350,7 +345,7 @@ bool listadeFuncoes(std::string txt_original) {
         }
       }
     }
-
+    estadodocomp.saida.insert(37,txt_saida);
     return tipo(t) && funcaoretorno(txt);
   }
   else {
@@ -361,12 +356,15 @@ bool listadeFuncoes(std::string txt_original) {
       return false;
     }
     txt_saida += *txt.begin();
+    std::string nomefunc = *txt.begin();
     c += 1;
     txt.erase(0,1);
     txt = tira_esp(txt);
 
     int tam_i = tam_id(txt);
     std::string letras = txt.substr(0, tam_i);
+    txt_saida += letras;
+    nomefunc += letras;
     c += tam_i;
     txt.erase(0, tam_i);
     txt = tira_esp(txt);
@@ -385,6 +383,11 @@ bool listadeFuncoes(std::string txt_original) {
     // Pega a lista de comandos (tamanho da função).
     int tam_f = tam_funcao(txt);
     if (tam_f < 0) {
+      std::cout << l << "; " << c << "\n";
+      return false;
+    }
+    estadodocomp.saida.insert(37,txt_saida);
+    if(!(estado.setfunc(nomefunc))) {
       std::cout << l << "; " << c << "\n";
       return false;
     }
@@ -2241,7 +2244,7 @@ int main() {
   std::string entrada(std::istreambuf_iterator<char>(std::cin), std::istreambuf_iterator<char>());
   entrada.pop_back();
 
-  estadodocomp.saida += "#include <iostream>\n#include <string>\n";
+  estadodocomp.saida = "#include <iostream>\n#include <string>\n";
 
   // Retorna a análise da gramática.
   std::cout << programa(entrada) << std::endl;
