@@ -23,6 +23,8 @@ bool funcaoretorno(std::string txt);
 
 bool listadeParametros(std::string txt);
 
+bool listadeParametros_(std::string txt);
+
 bool parametro(std::string txt);
 
 bool comandodeRetorno(std::string txt);
@@ -37,9 +39,23 @@ bool chamadadeFuncao(std::string txt);
 
 bool declaracaodeEstrutura(std::string txt);
 
+bool listadeDeclaracoes(std::string txt);
+
 bool declaracao(std::string txt);
 
+bool atribuicao(std::string txt);
+
+bool atribuicaodeEstrututra(std::string txt);
+
+bool atribuicaodeAtributo(std::string txt);
+
+bool listadeCondicionalCaso(std::string txt);
+
+bool listadeIdentificadores(std::string txt);
+
 bool tipo(std::string txt);
+
+bool expressao(std::string txt);
 
 bool valorInteiro(std::string txt);
 
@@ -99,7 +115,7 @@ std::string str_retorno(std::string txt) {
   }
   for(i=0; txt[pos+i] != ";" && txt[pos+i] != *txt.end(), i++);
 
-  if (txt[pos+i] == *txt.end()) {
+  if(txt[pos+i] == *txt.end()) {
     return '';
   }
   return txt.substr(pos, i);
@@ -182,8 +198,8 @@ private:
   std::list<std::string> pilhafuncoes;
   std::list<std::string> pilhaparametros;
   std::string variavelatual;
-  std::string saida;
 public:
+  std::string saida;
   std::string getnomeatual() {
 
   }
@@ -196,16 +212,10 @@ public:
   std::string getvariavelatual() {
 
   }
-  std::string getsaida() {
-
-  }
   bool setnomeatual(std::string txt) {
 
   }
   bool setvariavelatual(std::string txt) {
-
-  }
-  bool addsaida(std::string txt) {
 
   }
   std::string popfuncoes() {
@@ -228,6 +238,7 @@ bool programa(std::string txt_original) {
   if(txt.compare(0,9,"principal") == 0) {
     txt.erase(0,9);
     c += 9;
+    estadodocomp.saida += "\n int main() { \n\n }xfrfrfd";
     // Pega a lista de comandos.
     txt = tira_esp(txt);
     int tam_programa = tam_funcao(txt);
@@ -250,7 +261,7 @@ bool programa(std::string txt_original) {
 
 // Reconhecedor da transformação <ListadeFunções>.
 bool listadeFuncoes(std::string txt_original) {
-
+  std::string txt_saida = "\n";
   // Verifica qual o tipo de retorno da função.
   std::string txt = txt_original;
   txt = tira_esp(txt);
@@ -258,6 +269,7 @@ bool listadeFuncoes(std::string txt_original) {
     c += 3;
     txt.erase(0,3);
     txt = tira_esp(txt);
+    txt_saida += "\nint ";
 
     return funcaoretorno(txt);
   }
@@ -265,6 +277,7 @@ bool listadeFuncoes(std::string txt_original) {
     c += 2;
     txt.erase(0,2);
     txt = tira_esp(txt);
+    txt_saida += "\nfloat ";
 
     return funcaoretorno(txt);
   }
@@ -272,6 +285,7 @@ bool listadeFuncoes(std::string txt_original) {
     c += 6;
     txt.erase(0,6);
     txt = tira_esp(txt);
+    txt_saida += "\nbool";
 
     return funcaoretorno(txt);
   }
@@ -279,6 +293,7 @@ bool listadeFuncoes(std::string txt_original) {
     c += 5;
     txt.erase(0,5);
     txt = tira_esp(txt);
+    txt_saida += "\nstd::string ";
 
     return funcaoretorno(txt);
   }
@@ -294,6 +309,20 @@ bool listadeFuncoes(std::string txt_original) {
     txt.erase(0,tam_t);
     txt = tira_esp(txt);
 
+    if(t == "texto") {
+      txt_saida += "\nstd::string * ";
+    } else {
+      if(t == "pf") {
+        txt_saida += "\nfloat * ";
+      } else {
+        if(t == "logico") {
+          txt_saida += "\nbool * ";
+        } else {
+          txt_saida += "\nint * ";
+        }
+      }
+    }
+
     return tipo(t) && funcaoretorno(txt);
   }
   if(txt.compare(0,6, "matriz") == 0) {
@@ -308,14 +337,30 @@ bool listadeFuncoes(std::string txt_original) {
     txt.erase(0,tam_t);
     txt = tira_esp(txt);
 
+    if(t == "texto") {
+      txt_saida += "\nstd::string ** ";
+    } else {
+      if(t == "pf") {
+        txt_saida += "\nfloat ** ";
+      } else {
+        if(t == "logico") {
+          txt_saida += "\nbool ** ";
+        } else {
+          txt_saida += "\nint ** ";
+        }
+      }
+    }
+
     return tipo(t) && funcaoretorno(txt);
   }
   else {
     // Pega o identificador.
+    txt_saida += "\n void ";
     if (!std::isalpha(*txt.begin())) {
       std::cout << l << "; " << c << "\n";
       return false;
     }
+    txt_saida += *txt.begin();
     c += 1;
     txt.erase(0,1);
     txt = tira_esp(txt);
@@ -1950,133 +1995,68 @@ bool tipo(std::string txt) {
 
 bool expressao(std::string txt) {
   txt = tira_esp(txt);
-  if (txt.compare(0,1, '-')) {
+
+  if (txt.size()<=0) {
+    return true;
+  } else if (std::isalpha(*txt.begin())) {
+
+    int pos_colchete_1 = txt.find('[');
+    int pos_colchete_2 = txt.find(']');
+
+    int pos_parenteses_1 = txt.find('(');
+    int pos_parenteses_2 = txt.find(')');
+
+    if (pos_colchete_1>=0 && pos_colchete_2>=0) {
+      int pos_colchete_3 = txt.substr(pos_colchete_2, txt.end()).find('[');
+      int pos_colchete_4 = txt.substr(pos_colchete_2, txt.end()).find(']');
+      if (pos_colchete_3>=0 && pos_colchete_4>=0) {
+        return (letra(txt.substr(txt.begin(), pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-1)) && valorInteiro(txt.substr(pos_colchete_2+pos_colchete_3+1, pos_colchete_2+pos_colchete_4-1)) && expressao(txt.substr(pos_colchete_2+pos_colchete_4+1, txt.end())));
+      } else {
+        return (letra(txt.substr(txt.begin(), pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-1)) && expressao(txt.substr(pos_colchete_2+1, txt.end())));
+      }
+    } else if (pos_parenteses_1>=0 && pos_parenteses_2>=0) {
+      return (letra(txt.substr(txt.begin(), pos_parenteses_1-1)) && listadeIdentificadores(txt.substr(pos_parenteses_1+1, pos_parenteses_2-1)) && expressao(txt.substr(pos_parenteses_2+1, txt.end())));
+    } else {
+      int pos_expressao = 0;
+      for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-' && *it!='!' && *it!='%' && *it!='=' && *it!='>' && *it!='<'; it++) {
+        pos_expressao++;
+      }
+      return (letra(txt.substr(txt.begin(), pos_expressao) && expressao(txt.substr(pos_expressao+2, txt.end())));
+    }
+
+    std::cout << l << "; " << c << "\n";
+    return false;
+
+  }
+  else if (txt.compare(0,2, "**") || txt.compare(0,2, "++") || txt.compare(0,2, "==") || txt.compare(0,2, "!=") || txt.compare(0,2, ">=") || txt.compare(0,2, "<=")) {
+    txt.erase(0,2);
+    c+=2;
+    // Deriva em - Expressao Aritmetica OU - Expressao Logica
+    return (expressao(txt));
+  }
+
+  else if (txt.compare(0,1, '-') || txt.compare(0,1, '!') || txt.compare(0,1, '*') || txt.compare(0,1, '+') || txt.compare(0,1, '>') || txt.compare(0,1, '<') || txt.compare(0,1, '/')) {
     txt.erase(0,1);
     c++;
-    if (std::isalpha(*txt.begin()) || txt.compare(0,1, '(')) {
-      // Deriva em - Expressao Aritmetica OU - Expressao Logica
-      return (expressaoAritmetica(txt) || expressaoLogica(txt));
-    } else {
-      std::cout << l << "; " << c << "\n";
-      return false;
-    }
+    // Deriva em - Expressao Aritmetica OU - Expressao Logica
+    return (expressao(txt));
   }
   else if (txt.compare(0,1, '(')) {
     txt.erase(0,1);
     c++;
-    int tam_parenteses = 0;
-    for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!=')'; it++) {
-      tam_parenteses++;
-    }
-
-    if (*it!=')') {
-      std::cout << l << "; " << c << "\n";
-      return false;
-    }
-    // Deriva em (Expressão Aritmetica) Expressao Aritmetica OU (Expressão Aritmetica) Expressao logica OU (Expressão Logica) Expressao Logica
-    return ((expressaoAritmetica(txt.substr(txt.begin(), j)) && (expressaoAritmetica(txt.substr(j+2, txt.end())) || expressaoLogica(txt.substr(j+2, txt.end())))) || (expressaoLogica(txt.substr(txt.begin(), j)) && expressaoLogica(txt.substr(j+2, txt.end()))));
+    return (expressao(txt.substr(0, txt.end()-1)));
   }
   else if (txt.compare(0,10, "Verdadeiro")) {
     txt.erase(0,10);
     c+=10;
     // Deriva em Verdadeiro Expressao Logica
-    return (expressaoLogica(txt));
+    return (expressao(txt));
   }
   else if (txt.compare(0,5, "Falso")) {
     txt.erase(0,5);
     c+=5;
     // Deriva em Falso Expressao logica
-    return (expressaoLogica(txt));
-  }
-  else if (std::isalpha(*txt.begin())) {
-    int pos_expressao = 0;
-    for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
-      pos_expressao++;
-    }
-    c+=pos_expressao;
-    if (it!=txt.end()) {
-      // Deriva em <letras> <expressaoAritmetica> OU <letras> <expressaoLogica>
-      return (letra(txt.substr(txt.begin(), pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
-    }
-
-    int pos_colchete_1 = txt.find('[');
-    int pos_colchete_2 = txt.find(']');
-    if (pos_colchete_1<0 && pos_colchete_2<0) {
-      std::cout << l << "; " << c << "\n";
-      return false;
-    }
-    int pos_colchete_3 = txt.substr(pos_colchete_2, txt.end()).find('[');
-    int pos_colchete_4 = txt.substr(pos_colchete_2, txt.end()).find(']');
-    if (pos_colchete_3>=0) {
-      if (pos_colchete_4<0) {
-        std::cout << l << "; " << c << "\n";
-        return false;
-      }
-      // Deriva em <Letras> [Valor Inteiro][Valor Inteiro] <expressaoAritmetica> OU <Letras> [Valor Inteiro][Valor Inteiro] <expressaoLogica>
-      return (letra(txt.substr(txt.begin(), pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-1)) && valorInteiro(txt.substr(pos_colchete_2+pos_colchete_3+1, pos_colchete_2+pos_colchete_4-1)) && (expressaoAritmetica(txt.substr(pos_colchete_2+pos_colchete_4+1, txt.end())) || expressaoLogica(txt.substr(pos_colchete_2+pos_colchete_4+1, txt.end()))));
-    } else {
-      // Deriva em <Letras> [Valor Inteiro] <expressaoAritmetica> OU <Letras> [Valor Inteiro][Valor Inteiro] <expressaoLogica>
-      return (letra(txt.substr(txt.begin(), pos_colchete_1-1)) && valorInteiro(txt.substr(pos_colchete_1+1, pos_colchete_2-1)) && (expressaoAritmetica(txt.substr(pos_colchete_2+pos_colchete_4+1, txt.end())) || expressaoLogica(txt.substr(pos_colchete_2+pos_colchete_4+1, txt.end()))));
-    }
-    return (letra(txt.substr(txt.begin(), pos_expressao));
-
-  }
-  else if (txt.compare(0,1, '!')) {
-    txt.erase(0,1);
-    c++;
-    return  expressaoLogica(txt);
-  }
-  else if (txt.compare(0,1, '-')) {
-    std::string inteiros[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    txt.erase(0,1);
-    c++;
-    bool inteiro = false;
-    for (size_t i = 0; i < 10; i++) {
-      if ((txt.substr(0,1)).find(inteiros[i]) > 0) {
-        inteiro = true;
-        break;
-      }
-    }
-    if (inteiro) {
-      int pos_ponto = txt.find('.');
-      if (pos_ponto>=0) {
-        int pos_expressao = 0;
-        for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
-          pos_expressao++;
-        }
-        if (*it!=txt.end()) {
-          // Deriva em - Valor . Valor <expressaoAritmetica> OU - Valor . Valor <expressaoLogica>
-          return (valor(txt.substr(txt.begin(), pos_ponto)) && valor(txt.substr(pos_ponto+2, pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
-        } else if (*it==txt.end()){
-          c+=pos_expressao;
-          std::cout << l << "; " << c << "\n";
-          return false;
-        }
-
-        // Deriva em - Valor . Valor
-        return (valor(txt.substr(txt.begin(), pos_ponto)) && valor(txt.substr(pos_ponto+2, pos_expressao)));
-      } else if (pos_expressao<0) {
-        int pos_expressao = 0;
-        for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
-          pos_expressao++;
-        }
-        if (*it!=txt.end()) {
-          // Deriva em - Valor . Valor <expressaoAritmetica> OU - Valor . Valor <expressaoLogica>
-          return (valor(txt.substr(txt.begin(), pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
-        } else if (*it==txt.end()){
-          // Deriva em - Valor
-          return (valor(txt.substr(txt.begin(), pos_expressao));
-        } else {
-          c+=pos_expressao;
-          std::cout << l << "; " << c << "\n";
-          return false;
-        }
-      } else {
-        std::cout << l << "; " << c << "\n";
-        return false;
-      }
-    }
-
+    return (expressao(txt));
   } else {
 
     std::string inteiros[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
@@ -2091,35 +2071,19 @@ bool expressao(std::string txt) {
       int pos_ponto = txt.find('.');
       if (pos_ponto>=0) {
         int pos_expressao = 0;
-        for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
+        for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-' && *it!='!' && *it!='%' && *it!='=' && *it!='>' && *it!='<'; it++) {
           pos_expressao++;
         }
         if (*it!=txt.end()) {
-          // Deriva em  Valor . Valor <expressaoAritmetica> OU  Valor . Valor <expressaoLogica>
-          return (valor(txt.substr(txt.begin(), pos_ponto)) && valor(txt.substr(pos_ponto+2, pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
-        } else if (*it==txt.end()){
-          c+=pos_expressao;
-          std::cout << l << "; " << c << "\n";
-          return false;
+          return (valor(txt.substr(txt.begin(), pos_ponto)) && valor(txt.substr(pos_ponto+2, pos_expressao)) && expressao(txt.substr(pos_expressao+2, txt.end())));
         }
-
-        // Deriva em Valor . Valor
-        return (valor(txt.substr(txt.begin(), pos_ponto)) && valor(txt.substr(pos_ponto+2, pos_expressao)));
       } else if (pos_ponto<0) {
         int pos_expressao = 0;
-        for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-'; it++) {
+        for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!='*' && *it!='/' && *it!='%' && *it!='+' && *it!='-' && *it!='!' && *it!='%' && *it!='=' && *it!='>' && *it!='<'; it++) {
           pos_expressao++;
         }
         if (it!=txt.end()) {
-          // Deriva em Valor <expressaoAritmetica> OU  Valor <expressaoLogica>
-          return (valor(txt.substr(txt.begin(), pos_expressao)) && (expressaoAritmetica(txt.substr(pos_expressao+2, txt.end())) || expressaoLogica(txt.substr(pos_expressao+2, txt.end()))));
-        } else if (*it==txt.end()){
-          // Deriva em Valor
-          return (valor(txt.substr(txt.begin(), pos_expressao));
-        } else {
-          c+=pos_expressao;
-          std::cout << l << "; " << c << "\n";
-          return false;
+          return (valor(txt.substr(txt.begin(), pos_expressao)) && expressao(txt.substr(pos_expressao+2, txt.end())));
         }
       } else {
         std::cout << l << "; " << c << "\n";
@@ -2129,49 +2093,6 @@ bool expressao(std::string txt) {
     }
   }
   return false;
-
-}
-
-bool expressaoLogica(std::string txt) {
-  txt = tira_esp(txt);
-  if (txt.size()<2) {
-    return false;
-  }
-  if (txt.compare(0,2, "**") || txt.compare(0,2, "++") || txt.compare(0,2, "==") || txt.compare(0,2, "!=") || txt.compare(0,2, "<=") || txt.compare(0,2, ">=")) {
-    txt.erase(0,2);
-    c+=2;
-    return expressao(txt);
-  } else if (txt.compare(0,1, "<") || txt.compare(0,1, ">")) {
-    txt.erase(0,1);
-    c++;
-    return expressao(txt);
-  } else {
-    std::cout << l << "; " << c << "\n";
-    return false;
-  }
-  return false;
-}
-
-bool expressaoLogica_(std::string txt) {
-
-}
-
-bool expressaoAritmetica(std::string txt) {
-  if (txt.size()<2) {
-    return false;
-  }
-  if (txt.compare(0,1, "*") || txt.compare(0,1, "/") || txt.compare(0,1, "%") || txt.compare(0,1, "+") || txt.compare(0,1, "-")) {
-    txt.erase(0,1);
-    c++;
-    return expressao(txt);
-  } else {
-    std::cout << l << "; " << c << "\n";
-    return false;
-  }
-  return false;
-}
-
-bool expressaoAritmetica_(std::string txt) {
 
 }
 
@@ -2319,6 +2240,8 @@ int main() {
   // Lê o arquivo passado como: "./exemplo < <nome_do_arquivo>.txt".
   std::string entrada(std::istreambuf_iterator<char>(std::cin), std::istreambuf_iterator<char>());
   entrada.pop_back();
+
+  estadodocomp.saida += "#include <iostream>\n#include <string>\n";
 
   // Retorna a análise da gramática.
   std::cout << programa(entrada) << std::endl;
