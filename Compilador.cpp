@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iterator>
 #include <list>
+#include <fstream>
 
 /* =================== Declaração das Funções =================== */
 
@@ -107,19 +108,7 @@ int tam_tipo (std::string txt){
   return -1;
 }
 
-std::string str_retorno(std::string txt) {
-  int i;
-  std::size_t pos = txt.find("retorno");
-  if (pos == -1) {
-    return '';
-  }
-  for(i=0; txt[pos+i] != ";" && txt[pos+i] != *txt.end(), i++);
 
-  if(txt[pos+i] == *txt.end()) {
-    return '';
-  }
-  return txt.substr(pos, i);
-}
 
 int tam_funcao(std::string txt) {  // Pega a posição final i da função no txt baseado nas chaves.
   int cont_chaves = 1;
@@ -193,6 +182,7 @@ int tam_id(std::string txt) {
 class Estado {
 public:
   std::string funcaoatual;
+  std::list<std::string> comandos;
   std::list<std::string> parametros;
   std::string variavelatual;
   std::string saida;
@@ -211,16 +201,42 @@ public:
         aux = 1;
       }
     }
-    if(aux == 0) {
+    if(aux == 1) {
+      saida.insert(saida.find('{')+1, " } \n");
+      this.resetcomandos();
+      this.resetparametros();
       funcaoatual = nome;
       return true;
     } else {
       return false;
     }
   }
+
+  void resetcomandos() {
+    if(!comandos.empty()) {
+      std::string txt;
+      for(std::list<std::string>::iterator it = comandos.begin(); it != comandos.end();) {
+        txt += *it;
+        it = comandos.erase(it);
+      }
+      saida.insert(saida.find('}')-1, id + " ");
+    }
+  }
+
+  void resetparametros() {
+    if(!parametros.empty()) {
+      std::string txt;
+      for(std::list<std::string>::iterator it = parametros.begin(); it != parametros.end();) {
+        txt += *it;
+        it = parametros.erase(it);
+      }
+      saida.insert(saida.find('}')-1, id + " ");
+    }
+  }
 };
 
 Estado estadodocomp;
+std::string comando_atual;
 
 /* =================== Reconhecedor =================== */
 
@@ -232,7 +248,7 @@ bool programa(std::string txt_original) {
   if(txt.compare(0,9,"principal") == 0) {
     txt.erase(0,9);
     c += 9;
-    estadodocomp.saida += "\n int main() { \n\n }";
+    estadodocomp.saida += "\n int main() { \n\n return 0;}";
     estadodocomp.setfunc("main");
     // Pega a lista de comandos.
     txt = tira_esp(txt);
@@ -264,7 +280,7 @@ bool listadeFuncoes(std::string txt_original) {
     c += 3;
     txt.erase(0,3);
     txt = tira_esp(txt);
-    txt_saida += "\nint ";
+    txt_saida += "\nint {";
     estadodocomp.saida.insert(37,txt_saida);
     return funcaoretorno(txt);
   }
@@ -272,7 +288,7 @@ bool listadeFuncoes(std::string txt_original) {
     c += 2;
     txt.erase(0,2);
     txt = tira_esp(txt);
-    txt_saida += "\nfloat ";
+    txt_saida += "\nfloat {";
     estadodocomp.saida.insert(37,txt_saida);
     return funcaoretorno(txt);
   }
@@ -280,7 +296,7 @@ bool listadeFuncoes(std::string txt_original) {
     c += 6;
     txt.erase(0,6);
     txt = tira_esp(txt);
-    txt_saida += "\nbool";
+    txt_saida += "\nbool {";
     estadodocomp.saida.insert(37,txt_saida);
     return funcaoretorno(txt);
   }
@@ -288,7 +304,7 @@ bool listadeFuncoes(std::string txt_original) {
     c += 5;
     txt.erase(0,5);
     txt = tira_esp(txt);
-    txt_saida += "\nstd::string ";
+    txt_saida += "\nstd::string {";
     estadodocomp.saida.insert(37,txt_saida);
     return funcaoretorno(txt);
   }
@@ -305,50 +321,21 @@ bool listadeFuncoes(std::string txt_original) {
     txt = tira_esp(txt);
 
     if(t == "texto") {
-      txt_saida += "\nstd::string * ";
+      txt_saida += "\nstd::string * {";
     } else {
       if(t == "pf") {
-        txt_saida += "\nfloat * ";
+        txt_saida += "\nfloat * {";
       } else {
         if(t == "logico") {
-          txt_saida += "\nbool * ";
+          txt_saida += "\nbool * {";
         } else {
-          txt_saida += "\nint * ";
+          txt_saida += "\nint * {";
         }
       }
     }
     estadodocomp.saida.insert(37,txt_saida);
     return tipo(t) && funcaoretorno(txt);
-  }
-  if(txt.compare(0,6, "matriz") == 0) {
-    c += 6;
-    txt.erase(0,6);
-    txt = tira_esp(txt);
-
-    // Pega tipo.
-    int tam_t = tam_tipo(txt);
-    std::string t = txt.substr(0,tam_t);
-    c += tam_t;
-    txt.erase(0,tam_t);
-    txt = tira_esp(txt);
-
-    if(t == "texto") {
-      txt_saida += "\nstd::string ** ";
-    } else {
-      if(t == "pf") {
-        txt_saida += "\nfloat ** ";
-      } else {
-        if(t == "logico") {
-          txt_saida += "\nbool ** ";
-        } else {
-          txt_saida += "\nint ** ";
-        }
-      }
-    }
-    estadodocomp.saida.insert(37,txt_saida);
-    return tipo(t) && funcaoretorno(txt);
-  }
-  else {
+  } else {
     // Pega o identificador.
     txt_saida += "\n void ";
     if (!std::isalpha(*txt.begin())) {
@@ -363,7 +350,7 @@ bool listadeFuncoes(std::string txt_original) {
 
     int tam_i = tam_id(txt);
     std::string letras = txt.substr(0, tam_i);
-    txt_saida += letras;
+    txt_saida += letras + " ";
     nomefunc += letras;
     c += tam_i;
     txt.erase(0, tam_i);
@@ -386,7 +373,7 @@ bool listadeFuncoes(std::string txt_original) {
       std::cout << l << "; " << c << "\n";
       return false;
     }
-    estadodocomp.saida.insert(37,txt_saida);
+    estadodocomp.saida.insert(37,txt_saida + " {");
     if(!(estado.setfunc(nomefunc))) {
       std::cout << l << "; " << c << "\n";
       return false;
@@ -428,21 +415,14 @@ bool funcaoretorno(std::string txt) {
     return false;
   }
 
-  // Pega o retorno.
-  std::string retorno = str_retorno(txt);
-  if (retorno == '') {
-    std::cout << l << "; " << c << "\n";
-    return false;
-  }
-  txt.erase(txt.find(retorno), retorno.size());
+  estadodocomp.saida.insert(estadodocomp.saida.find('{')-1, id + " ");
 
-  c++;
   // Deriva.
   if (tam_f == 0) {
-    return identificador(id) && listadeParametros(parametros) && listadeComandos_(txt.substr(1, tam_f-2) && comandodeRetorno(retorno);
+    return identificador(id) && listadeParametros(parametros) && listadeComandos_(txt.substr(1,txt.end()-1);
   }
   else {
-    return identificador(id) && listadeParametros(parametros) && listadeComandos_(txt.substr(1, tam_f-2) && comandodeRetorno(retorno) && listadeFuncoes(txt.substr(tam_f));
+    return identificador(id) && listadeParametros(parametros) && listadeComandos_(txt.substr(1, tam_f-2) && listadeFuncoes(txt.substr(tam_f));
   }
 }
 
@@ -456,13 +436,14 @@ bool listadeParametros(std::string txt) {
     std::cout << l << "; " << c << "\n";
     return false;
   }
-
+  estadodocomp.saida.insert(estadodocomp.saida.find('{')-1, "( ) ");
   txt = tira_esp(txt);
   if (txt.compare(0,1, ')') == 0) {
     c++;
     return true;
   }
   txt = tira_esp(txt);
+
   int i = 0;
   for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!=','; it++) {
     i++;
@@ -719,14 +700,21 @@ bool parametro(std::string txt) {
 
 bool comandodeRetorno(std::string txt) {
   txt = tira_esp(txt);
+  if(estadodocomp.funcaoatual == "main") {
+    std::cout << l << "; " << c << "\n";
+    return false;
+  }
   if (txt.compare(0,7,"retorno")) {
     txt.erase(0,7);
     c += 7;
+    comando_atual = "return ";
     txt = tira_esp(txt);
     if(txt.compare(0,1,"=")) {
         txt.erase(0,1);
+        comando_atual += " = ";
         c++;
         txt = tira_esp(txt);
+        estadodocomp.comandos.push_back(txt_saida);
         return expressao(txt.substr(txt.begin(), txt.end()-1));
     }
   }
@@ -747,6 +735,7 @@ bool listadeComandos(std::string txt) {
 }
 
 bool listadeComandos_(std::string txt) {
+  txt = tira_esp(txt);
   int i = 0;
   for(std::string::iterator it=txt.begin(); it!=txt.end() && *it!=';'; it++) {
     i++;
@@ -754,6 +743,16 @@ bool listadeComandos_(std::string txt) {
   if (txt[i] == *txt.end()) {
     std::cout << l << "; " << c << "\n";
     return false;
+  }
+  if(txt.compare(0,7,"retorno") == 0) {
+    int k;
+    for(k=0; txt[k] != ";" && txt[k] != *txt.end(), k++);
+    if(txt[k] == *txt.end()) {
+      std::cout << l << "; " << c << "\n";
+      return false;
+    } else {
+      return comandodeRetorno(txt.substr(0,k)) && listadeComandos_(txt.substr(k+1,txt.end()));
+    }
   }
   // Levar para Comando o tamanho exato do Escolha Caso;
   if (txt.compare(0,12, "escolha caso")) {
@@ -839,11 +838,16 @@ bool listadeComandos_(std::string txt) {
 }
 
 bool comando(std::string txt) {
+  if (comando_atual.length()>0) {
+    estadodocomp.comandos.push_back(comando_atual);
+    comando_atual="";
+  }
 
   txt = tira_esp(txt);
 
   if (txt.compare(0,3, "leia")) {
     txt.erase(0,3);
+    comando_atual+=""
     // Deriva em leia (Identificador).
     return identificador(txt.substr(1,txt.end()-1));
 
@@ -2248,6 +2252,11 @@ int main() {
 
   // Retorna a análise da gramática.
   std::cout << programa(entrada) << std::endl;
+
+  ofstream arq;
+  arq.open ("Codigo_Objeto.cpp");
+  arq << estadodocomp.saida;
+  arq.close();
 
   return 0;
 }
